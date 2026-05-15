@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
@@ -10,8 +10,7 @@ import { loginSchema, type LoginInput } from '@/lib/validations'
 import { cn } from '@/lib/utils'
 
 export default function LoginPage() {
-  const router       = useRouter()
-  const searchParams = useSearchParams()
+  const router = useRouter()
   const [showPw, setShowPw] = useState(false)
   const [authError, setAuthError] = useState('')
   const [loading, setLoading] = useState(false)

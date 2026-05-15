@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     default: 'Dairy Block Hub',
     template: '%s · Dairy Block Hub',
   },
-  description: 'Maintenance & Security Request Hub for Dairy Block, Denver's premier LoDo micro-district.',
+  description: "Maintenance & Security Request Hub for Dairy Block, Denver's premier LoDo micro-district.",
   icons: { icon: '/favicon.ico' },
 }
 
