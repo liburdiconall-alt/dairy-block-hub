@@ -1,0 +1,264 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  TENANT
+  PROPERTY_MANAGER
+  MAINTENANCE_TECH
+  SECURITY_OFFICER
+  ADMIN
+  VENDOR
+}
+
+enum Department {
+  MAINTENANCE
+  SECURITY
+  MANAGEMENT
+  VENDOR
+}
+
+enum RequestType {
+  MAINTENANCE
+  SECURITY
+}
+
+enum Urgency {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+enum TicketStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+  ASSIGNED
+  SCHEDULED
+  IN_PROGRESS
+  WAITING_ON_VENDOR
+  WAITING_ON_TENANT
+  COMPLETED
+  CLOSED
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         Role     @default(TENANT)
+  avatarUrl    String?
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  tenantInfo       Tenant?
+  staffInfo        Staff?
+  submittedRequests Request[]     @relation("SubmittedBy")
+  assignedRequests  Request[]     @relation("AssignedTo")
+  comments         Comment[]
+  internalNotes    InternalNote[]
+  notifications    Notification[]
+  historyEntries   TicketHistory[]
+}
+
+model Tenant {
+  id       String  @id @default(cuid())
+  userId   String  @unique
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unit     String?
+  building String?
+  company  String?
+  suite    String?
+}
+
+model Staff {
+  id         String     @id @default(cuid())
+  userId     String     @unique
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department
+  badge      String?
+  isActive   Boolean    @default(true)
+}
+
+// ─── Requests / Tickets ──────────────────────────────────────────────────────
+
+model Request {
+  id             String       @id @default(cuid())
+  ticketNumber   String       @unique
+  type           RequestType
+  category       String
+  title          String
+  description    String       @db.Text
+  urgency        Urgency      @default(MEDIUM)
+  status         TicketStatus @default(SUBMITTED)
+  location       String?
+  floor          String?
+  isEmergency    Boolean      @default(false)
+  denialReason   String?      @db.Text
+  scheduledFor   DateTime?
+  completedAt    DateTime?
+  closedAt       DateTime?
+  submittedById  String
+  submittedBy    User         @relation("SubmittedBy", fields: [submittedById], references: [id])
+  assignedToId   String?
+  assignedTo     User?        @relation("AssignedTo", fields: [assignedToId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  comments          Comment[]
+  internalNotes     InternalNote[]
+  attachments       Attachment[]
+  history           TicketHistory[]
+  notifications     Notification[]
+  maintenanceDetail MaintenanceDetail?
+  securityDetail    SecurityDetail?
+}
+
+model MaintenanceDetail {
+  id               String   @id @default(cuid())
+  requestId        String   @unique
+  request          Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  laborHours       Float?
+  materials        String?  @db.Text
+  estimatedCost    Float?
+  actualCost       Float?
+  vendorName       String?
+  vendorContact    String?
+  isPreventive     Boolean  @default(false)
+  completionNotes  String?  @db.Text
+  workOrderNumber  String?
+}
+
+model SecurityDetail {
+  id               String    @id @default(cuid())
+  requestId        String    @unique
+  request          Request   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  incidentDate     DateTime?
+  incidentLocation String?
+  personsInvolved  String?   @db.Text
+  witnesses        String?   @db.Text
+  riskLevel        String?
+  followUpRequired Boolean   @default(false)
+  isConfidential   Boolean   @default(false)
+  escalatedToMgmt  Boolean   @default(false)
+  officerBadge     String?
+  reportNumber     String?
+}
+
+// ─── Comments & Notes ────────────────────────────────────────────────────────
+
+model Comment {
+  id         String   @id @default(cuid())
+  requestId  String
+  request    Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  content    String   @db.Text
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model InternalNote {
+  id        String   @id @default(cuid())
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+// ─── Attachments ─────────────────────────────────────────────────────────────
+
+model Attachment {
+  id           String   @id @default(cuid())
+  requestId    String
+  request      Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  url          String
+  filename     String
+  fileType     String
+  fileSize     Int
+  uploadedById String
+  createdAt    DateTime @default(now())
+}
+
+// ─── History & Notifications ─────────────────────────────────────────────────
+
+model TicketHistory {
+  id          String        @id @default(cuid())
+  requestId   String
+  request     Request       @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  changedById String
+  changedBy   User          @relation(fields: [changedById], references: [id])
+  fromStatus  TicketStatus?
+  toStatus    TicketStatus?
+  note        String?       @db.Text
+  createdAt   DateTime      @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestId String?
+  request   Request? @relation(fields: [requestId], references: [id])
+  type      String
+  subject   String
+  body      String   @db.Text
+  sentAt    DateTime?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
