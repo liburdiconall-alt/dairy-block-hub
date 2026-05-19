@@ -26,10 +26,14 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email.toLowerCase() },
         })
 
-        if (!user || !user.isActive) return null
+        if (!user) return null
 
         const valid = await bcrypt.compare(credentials.password, user.passwordHash)
         if (!valid) return null
+
+        if (user.status === 'PENDING') throw new Error('pending')
+        if (user.status === 'DENIED')  throw new Error('denied')
+        if (!user.isActive)            throw new Error('inactive')
 
         return { id: user.id, email: user.email, name: user.name, role: user.role }
       },

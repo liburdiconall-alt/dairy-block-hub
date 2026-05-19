@@ -218,6 +218,97 @@ export async function sendEmergencyAlert(
   })
 }
 
+// ─── Access request / approval emails ────────────────────────────────────────
+
+export async function sendAccessRequestAdminEmail(data: {
+  applicantName:  string
+  applicantEmail: string
+  unit?:          string
+  building?:      string
+  company?:       string
+  adminEmails:    string[]
+}) {
+  const reviewUrl = `${APP_URL}/admin/users`
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;font-size:24px;color:#1A1A1A;font-weight:700;">New access request.</h2>
+    <p style="margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.7;">
+      A new tenant has requested access to the Dairy Block Hub and is awaiting your approval.
+    </p>
+    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:20px;margin:0 0 24px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:4px 0;font-size:13px;color:#6B7280;width:80px;">Name</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;font-weight:600;">${data.applicantName}</td></tr>
+        <tr><td style="padding:4px 0;font-size:13px;color:#6B7280;">Email</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;">${data.applicantEmail}</td></tr>
+        ${data.unit     ? `<tr><td style="padding:4px 0;font-size:13px;color:#6B7280;">Unit</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;">${data.unit}</td></tr>` : ''}
+        ${data.building ? `<tr><td style="padding:4px 0;font-size:13px;color:#6B7280;">Building</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;">${data.building}</td></tr>` : ''}
+        ${data.company  ? `<tr><td style="padding:4px 0;font-size:13px;color:#6B7280;">Company</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;">${data.company}</td></tr>` : ''}
+      </table>
+    </div>
+    <a href="${reviewUrl}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Review Request →</a>
+  `)
+
+  await transporter.sendMail({
+    from:    FROM,
+    to:      data.adminEmails.join(', '),
+    subject: `New Access Request — ${data.applicantName}`,
+    html,
+  })
+}
+
+export async function sendAccessApprovedEmail(data: {
+  recipientName:  string
+  recipientEmail: string
+}) {
+  const loginUrl = `${APP_URL}/login`
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;font-size:24px;color:#1A1A1A;font-weight:700;">You're approved.</h2>
+    <p style="margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.7;">
+      Hi ${data.recipientName}, your access request for the Dairy Block Hub has been approved.
+      You can now sign in and start submitting requests.
+    </p>
+    <a href="${loginUrl}" style="display:inline-block;background:#29967F;color:#FFFFFF;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;font-weight:600;">Sign In Now →</a>
+    <p style="margin:24px 0 0;font-size:13px;color:#9CA3AF;line-height:1.7;">
+      Use the email address this was sent to along with the password you chose when registering.
+    </p>
+  `)
+
+  await transporter.sendMail({
+    from:    FROM,
+    to:      data.recipientEmail,
+    subject: 'Your Dairy Block Hub access has been approved',
+    html,
+  })
+}
+
+export async function sendAccessDeniedEmail(data: {
+  recipientName:  string
+  recipientEmail: string
+  reason?:        string
+}) {
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;font-size:24px;color:#1A1A1A;font-weight:700;">Access request update.</h2>
+    <p style="margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.7;">
+      Hi ${data.recipientName}, after reviewing your request for access to the Dairy Block Hub,
+      we were unable to approve your account at this time.
+    </p>
+    ${data.reason ? `
+    <div style="background:#FEF2F2;border-left:3px solid #F64741;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#F64741;text-transform:uppercase;letter-spacing:0.05em;">Reason</p>
+      <p style="margin:0;font-size:14px;color:#1A1A1A;">${data.reason}</p>
+    </div>` : ''}
+    <p style="margin:0;font-size:14px;color:#4B5563;line-height:1.7;">
+      If you believe this is a mistake, please reach out to us directly at
+      <a href="mailto:hub@dairyblock.com" style="color:#29967F;">hub@dairyblock.com</a>.
+    </p>
+  `)
+
+  await transporter.sendMail({
+    from:    FROM,
+    to:      data.recipientEmail,
+    subject: 'Update on your Dairy Block Hub access request',
+    html,
+  })
+}
+
 export async function sendNewTicketAlert(
   data: TicketEmailData,
   staffEmails: string[]

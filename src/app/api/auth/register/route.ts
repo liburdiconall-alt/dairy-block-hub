@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/db'
 import { registerSchema } from '@/lib/validations'
+import { sendAccessRequestAdminEmail } from '@/lib/email'
 
 export async function POST(req: Request) {
   try {
@@ -21,8 +22,9 @@ export async function POST(req: Request) {
         name:         data.name,
         passwordHash,
         role:         'TENANT',
+        status:       'PENDING',
+        isActive:     false,
         phone:        data.phone,
-        isActive:     true,
         tenantInfo: {
           create: {
             unit:     data.unit,
@@ -32,6 +34,27 @@ export async function POST(req: Request) {
         },
       },
     })
+
+    // Notify all admins and property managers
+    try {
+      const admins = await prisma.user.findMany({
+        where: { role: { in: ['ADMIN', 'PROPERTY_MANAGER'] }, status: 'ACTIVE' },
+        select: { email: true },
+      })
+      const adminEmails = admins.map(a => a.email)
+      if (adminEmails.length > 0) {
+        await sendAccessRequestAdminEmail({
+          applicantName:  data.name,
+          applicantEmail: data.email.toLowerCase(),
+          unit:           data.unit,
+          building:       data.building,
+          company:        data.company,
+          adminEmails,
+        })
+      }
+    } catch (emailErr) {
+      console.error('[register] email failed:', emailErr)
+    }
 
     return NextResponse.json({ id: user.id, email: user.email }, { status: 201 })
   } catch (err: any) {

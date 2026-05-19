@@ -4,25 +4,36 @@ import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Wrench, Shield, Users, Settings,
-  LogOut, ChevronDown, User, Bell
+  LogOut, ChevronDown, User, UserCog
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const MAIN_LINKS = [
-  { href: '/admin/dashboard',    label: 'Dashboard',   icon: LayoutDashboard },
-  { href: '/admin/maintenance',  label: 'Maintenance',  icon: Wrench           },
-  { href: '/admin/security',     label: 'Security',     icon: Shield           },
-  { href: '/admin/staff',        label: 'Staff',        icon: Users            },
-  { href: '/admin/settings',     label: 'Settings',     icon: Settings         },
+  { href: '/admin/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
+  { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench          },
+  { href: '/admin/security',    label: 'Security',    icon: Shield          },
+  { href: '/admin/users',       label: 'Users',       icon: UserCog         },
+  { href: '/admin/staff',       label: 'Staff',       icon: Users           },
+  { href: '/admin/settings',    label: 'Settings',    icon: Settings        },
 ]
 
 export function AdminSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [userOpen, setUserOpen] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
 
   const role = session?.user.role
+
+  useEffect(() => {
+    if (role === 'ADMIN' || role === 'PROPERTY_MANAGER') {
+      fetch('/api/admin/users/pending-count')
+        .then(r => r.json())
+        .then(d => setPendingCount(d.count ?? 0))
+        .catch(() => {})
+    }
+  }, [role, pathname])
 
   return (
     <aside className="w-64 flex-shrink-0 bg-db-black min-h-screen flex flex-col">
@@ -37,14 +48,22 @@ export function AdminSidebar() {
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {MAIN_LINKS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || (href !== '/admin/dashboard' && pathname.startsWith(href))
+          const badge = href === '/admin/users' && pendingCount > 0 ? pendingCount : null
           return (
             <Link
               key={href}
               href={href}
-              className={active ? 'sidebar-link-active' : 'sidebar-link'}
+              className={cn(active ? 'sidebar-link-active' : 'sidebar-link', 'flex items-center justify-between')}
             >
-              <Icon size={17} />
-              {label}
+              <span className="flex items-center gap-2">
+                <Icon size={17} />
+                {label}
+              </span>
+              {badge && (
+                <span className="text-[10px] font-bold bg-db-orange text-white rounded-full w-4 h-4 flex items-center justify-center flex-shrink-0">
+                  {badge > 9 ? '9+' : badge}
+                </span>
+              )}
             </Link>
           )
         })}

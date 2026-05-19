@@ -30,7 +30,15 @@ export default function LoginPage() {
     setLoading(false)
 
     if (res?.error) {
-      setAuthError('Invalid email or password. Please try again.')
+      if (res.error === 'pending') {
+        setAuthError('Your account is pending approval. You will receive an email once an admin has reviewed your request.')
+      } else if (res.error === 'denied') {
+        setAuthError('Your access request was not approved. Please contact hub@dairyblock.com for more information.')
+      } else if (res.error === 'inactive') {
+        setAuthError('Your account has been deactivated. Please contact hub@dairyblock.com.')
+      } else {
+        setAuthError('Invalid email or password. Please try again.')
+      }
       return
     }
 
