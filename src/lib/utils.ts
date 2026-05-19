@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { TicketStatus, Urgency, RequestType } from '@prisma/client'
+import { TicketStatus, Urgency, RequestType, EventStatus, EventType } from '@prisma/client'
 import { format, formatDistanceToNow } from 'date-fns'
 
 export function cn(...inputs: ClassValue[]) {
@@ -95,6 +95,48 @@ export function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
+
+// ─── Event helpers ────────────────────────────────────────────────────────────
+
+export function generateProposalNumber(): string {
+  const year = new Date().getFullYear()
+  const rand = Math.floor(Math.random() * 9000) + 1000
+  return `DB-EV-${year}-${rand}`
+}
+
+export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+  SUBMITTED:    'Submitted',
+  UNDER_REVIEW: 'Under Review',
+  APPROVED:     'Approved',
+  DENIED:       'Denied',
+}
+
+export const EVENT_STATUS_COLORS: Record<EventStatus, string> = {
+  SUBMITTED:    'bg-db-gray-100 text-db-gray-700',
+  UNDER_REVIEW: 'bg-amber-50 text-amber-700 border border-amber-200',
+  APPROVED:     'bg-db-mint-light text-db-teal-dark border border-db-mint',
+  DENIED:       'bg-red-50 text-db-red border border-red-200',
+}
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  ACTIVATION:      'Activation',
+  PRIVATE_EVENT:   'Private Event',
+  COMMUNITY_EVENT: 'Community Event',
+  POP_UP:          'Pop-Up',
+  CORPORATE:       'Corporate',
+  OTHER:           'Other',
+}
+
+export const EVENT_SPACES = [
+  'The Yard (outdoor)',
+  'East Alley',
+  'West Alley',
+  'Rooftop',
+  'Courtyard',
+  'Ground Floor Commons',
+  'Private Suite',
+  'Other / TBD',
+]
 
 // ─── Expected response time ───────────────────────────────────────────────────
 

@@ -37,6 +37,22 @@ enum Urgency {
   EMERGENCY
 }
 
+enum EventStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+}
+
+enum EventType {
+  ACTIVATION
+  PRIVATE_EVENT
+  COMMUNITY_EVENT
+  POP_UP
+  CORPORATE
+  OTHER
+}
+
 enum UserStatus {
   PENDING
   ACTIVE
@@ -118,6 +134,9 @@ model User {
   internalNotes    InternalNote[]
   notifications    Notification[]
   historyEntries   TicketHistory[]
+  eventProposals   EventProposal[] @relation("SubmittedEventBy")
+  reviewedEvents   EventProposal[] @relation("ReviewedEventBy")
+  eventHistory     EventHistory[]
 }
 
 model Tenant {
@@ -268,4 +287,42 @@ model Notification {
   sentAt    DateTime?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+// ─── Event Proposals ─────────────────────────────────────────────────────────
+
+model EventProposal {
+  id                String      @id @default(cuid())
+  proposalNumber    String      @unique
+  title             String
+  type              EventType
+  description       String      @db.Text
+  proposedDate      DateTime
+  startTime         String
+  endTime           String
+  location          String
+  expectedAttendees Int
+  setupNotes        String?     @db.Text
+  status            EventStatus @default(SUBMITTED)
+  adminNotes        String?     @db.Text
+  denialReason      String?     @db.Text
+  submittedById     String
+  submittedBy       User        @relation("SubmittedEventBy", fields: [submittedById], references: [id])
+  reviewedById      String?
+  reviewedBy        User?       @relation("ReviewedEventBy", fields: [reviewedById], references: [id])
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  history           EventHistory[]
+}
+
+model EventHistory {
+  id         String       @id @default(cuid())
+  proposalId String
+  proposal   EventProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  changedById String
+  changedBy  User         @relation(fields: [changedById], references: [id])
+  fromStatus EventStatus?
+  toStatus   EventStatus?
+  note       String?      @db.Text
+  createdAt  DateTime     @default(now())
 }

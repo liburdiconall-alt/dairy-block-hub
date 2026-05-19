@@ -309,6 +309,117 @@ export async function sendAccessDeniedEmail(data: {
   })
 }
 
+// ─── Event proposal emails ────────────────────────────────────────────────────
+
+export async function sendEventProposalConfirmationEmail(data: {
+  recipientName:   string
+  recipientEmail:  string
+  proposalNumber:  string
+  title:           string
+  proposedDate:    string
+  location:        string
+}) {
+  const url = `${APP_URL}/events/${data.proposalNumber}`
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;font-size:24px;color:#1A1A1A;font-weight:700;">Proposal received.</h2>
+    <p style="margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.7;">
+      Hi ${data.recipientName}, your event proposal has been submitted and is under review. We'll be in touch shortly.
+    </p>
+    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:20px;margin:0 0 24px;">
+      <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;">${data.proposalNumber}</p>
+      <h3 style="margin:4px 0 12px;font-size:17px;color:#1A1A1A;font-weight:700;">${data.title}</h3>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:3px 0;font-size:13px;color:#6B7280;width:90px;">Date</td><td style="padding:3px 0;font-size:13px;color:#1A1A1A;">${data.proposedDate}</td></tr>
+        <tr><td style="padding:3px 0;font-size:13px;color:#6B7280;">Location</td><td style="padding:3px 0;font-size:13px;color:#1A1A1A;">${data.location}</td></tr>
+      </table>
+    </div>
+    <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Track Proposal →</a>
+  `)
+  await transporter.sendMail({
+    from:    FROM,
+    to:      data.recipientEmail,
+    subject: `[${data.proposalNumber}] Event Proposal Received — ${data.title}`,
+    html,
+  })
+}
+
+export async function sendEventProposalAdminEmail(data: {
+  proposalNumber:  string
+  title:           string
+  type:            string
+  proposedDate:    string
+  location:        string
+  submitterName:   string
+  submitterEmail:  string
+  adminEmails:     string[]
+}) {
+  const url = `${APP_URL}/admin/events/${data.proposalNumber}`
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;font-size:24px;color:#1A1A1A;font-weight:700;">New event proposal.</h2>
+    <p style="margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.7;">
+      A new event proposal has been submitted and is awaiting your review.
+    </p>
+    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:20px;margin:0 0 24px;">
+      <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;">${data.proposalNumber}</p>
+      <h3 style="margin:4px 0 12px;font-size:17px;color:#1A1A1A;font-weight:700;">${data.title}</h3>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:3px 0;font-size:13px;color:#6B7280;width:90px;">Type</td><td style="padding:3px 0;font-size:13px;color:#1A1A1A;">${data.type}</td></tr>
+        <tr><td style="padding:3px 0;font-size:13px;color:#6B7280;">Date</td><td style="padding:3px 0;font-size:13px;color:#1A1A1A;">${data.proposedDate}</td></tr>
+        <tr><td style="padding:3px 0;font-size:13px;color:#6B7280;">Location</td><td style="padding:3px 0;font-size:13px;color:#1A1A1A;">${data.location}</td></tr>
+        <tr><td style="padding:3px 0;font-size:13px;color:#6B7280;">Submitted by</td><td style="padding:3px 0;font-size:13px;color:#1A1A1A;">${data.submitterName} (${data.submitterEmail})</td></tr>
+      </table>
+    </div>
+    <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Review Proposal →</a>
+  `)
+  await transporter.sendMail({
+    from:    FROM,
+    to:      data.adminEmails.join(', '),
+    subject: `[${data.proposalNumber}] New Event Proposal — ${data.title}`,
+    html,
+  })
+}
+
+export async function sendEventStatusUpdateEmail(data: {
+  recipientName:  string
+  recipientEmail: string
+  proposalNumber: string
+  title:          string
+  newStatus:      string
+  adminNotes?:    string
+  denialReason?:  string
+}) {
+  const url = `${APP_URL}/events/${data.proposalNumber}`
+  const isApproved = data.newStatus === 'APPROVED'
+  const isDenied   = data.newStatus === 'DENIED'
+
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;font-size:24px;color:#1A1A1A;font-weight:700;">
+      ${isApproved ? 'Your event proposal has been approved.' : isDenied ? 'An update on your event proposal.' : 'Your proposal status has been updated.'}
+    </h2>
+    <p style="margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.7;">
+      Hi ${data.recipientName}, your proposal <strong>${data.title}</strong> (${data.proposalNumber}) is now
+      <strong style="color:${isApproved ? '#29967F' : isDenied ? '#F64741' : '#F2A53F'};">${data.newStatus.replace('_', ' ')}</strong>.
+    </p>
+    ${data.adminNotes ? `
+    <div style="background:#E8F2EC;border-left:3px solid #29967F;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#29967F;text-transform:uppercase;letter-spacing:0.05em;">Note from the team</p>
+      <p style="margin:0;font-size:14px;color:#1A1A1A;">${data.adminNotes}</p>
+    </div>` : ''}
+    ${data.denialReason ? `
+    <div style="background:#FEF2F2;border-left:3px solid #F64741;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#F64741;text-transform:uppercase;letter-spacing:0.05em;">Reason</p>
+      <p style="margin:0;font-size:14px;color:#1A1A1A;">${data.denialReason}</p>
+    </div>` : ''}
+    <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">View Proposal →</a>
+  `)
+  await transporter.sendMail({
+    from:    FROM,
+    to:      data.recipientEmail,
+    subject: `[${data.proposalNumber}] Event Proposal ${isApproved ? 'Approved' : isDenied ? 'Update' : 'Status Update'} — ${data.title}`,
+    html,
+  })
+}
+
 export async function sendNewTicketAlert(
   data: TicketEmailData,
   staffEmails: string[]

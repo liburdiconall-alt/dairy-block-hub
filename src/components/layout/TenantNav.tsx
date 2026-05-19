@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { LayoutDashboard, PlusCircle, ClipboardList, LogOut, ChevronDown, User } from 'lucide-react'
+import { LayoutDashboard, PlusCircle, ClipboardList, LogOut, ChevronDown, User, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: '/dashboard',   label: 'Dashboard',      icon: LayoutDashboard },
   { href: '/requests',    label: 'My Requests',     icon: ClipboardList   },
   { href: '/requests/new',label: 'New Request',     icon: PlusCircle      },
+  { href: '/events',      label: 'Events',          icon: Calendar        },
 ]
 
 export function TenantNav() {
