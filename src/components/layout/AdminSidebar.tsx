@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Wrench, Shield, Users, Settings,
-  LogOut, ChevronDown, User, UserCog, Calendar
+  LogOut, ChevronDown, User, UserCog, Calendar, FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
@@ -14,6 +14,7 @@ const MAIN_LINKS = [
   { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench          },
   { href: '/admin/security',    label: 'Security',    icon: Shield          },
   { href: '/admin/events',      label: 'Events',      icon: Calendar        },
+  { href: '/admin/submissions', label: 'Submissions', icon: FileText        },
   { href: '/admin/users',       label: 'Users',       icon: UserCog         },
   { href: '/admin/staff',       label: 'Staff',       icon: Users           },
   { href: '/admin/settings',    label: 'Settings',    icon: Settings        },
@@ -23,8 +24,9 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [userOpen, setUserOpen] = useState(false)
-  const [pendingUsers, setPendingUsers]   = useState(0)
-  const [pendingEvents, setPendingEvents] = useState(0)
+  const [pendingUsers, setPendingUsers]           = useState(0)
+  const [pendingEvents, setPendingEvents]         = useState(0)
+  const [pendingSubmissions, setPendingSubmissions] = useState(0)
 
   const role = session?.user.role
 
@@ -37,6 +39,10 @@ export function AdminSidebar() {
       fetch('/api/events/pending-count')
         .then(r => r.json())
         .then(d => setPendingEvents(d.count ?? 0))
+        .catch(() => {})
+      fetch('/api/admin/submissions/count')
+        .then(r => r.json())
+        .then(d => setPendingSubmissions(d.count ?? 0))
         .catch(() => {})
     }
   }, [role, pathname])
@@ -55,8 +61,9 @@ export function AdminSidebar() {
         {MAIN_LINKS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || (href !== '/admin/dashboard' && pathname.startsWith(href))
           const badge =
-            href === '/admin/users'  && pendingUsers  > 0 ? pendingUsers  :
-            href === '/admin/events' && pendingEvents > 0 ? pendingEvents : null
+            href === '/admin/users'        && pendingUsers        > 0 ? pendingUsers        :
+            href === '/admin/events'       && pendingEvents       > 0 ? pendingEvents       :
+            href === '/admin/submissions'  && pendingSubmissions  > 0 ? pendingSubmissions  : null
           return (
             <Link
               key={href}

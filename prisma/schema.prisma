@@ -53,6 +53,22 @@ enum EventType {
   OTHER
 }
 
+enum FormType {
+  KEY_REQUEST
+  FITNESS_WAIVER
+  PET_REGISTRATION
+  EMERGENCY_COORDINATOR
+  HANDBOOK_ACKNOWLEDGEMENT
+  RETAIL_SALES_REPORT
+}
+
+enum FormStatus {
+  SUBMITTED
+  IN_REVIEW
+  COMPLETED
+  DENIED
+}
+
 enum UserStatus {
   PENDING
   ACTIVE
@@ -137,6 +153,8 @@ model User {
   eventProposals   EventProposal[] @relation("SubmittedEventBy")
   reviewedEvents   EventProposal[] @relation("ReviewedEventBy")
   eventHistory     EventHistory[]
+  formSubmissions  FormSubmission[] @relation("SubmittedForms")
+  reviewedForms    FormSubmission[] @relation("ReviewedForms")
 }
 
 model Tenant {
@@ -325,4 +343,19 @@ model EventHistory {
   toStatus   EventStatus?
   note       String?      @db.Text
   createdAt  DateTime     @default(now())
+}
+
+model FormSubmission {
+  id            String      @id @default(cuid())
+  refNumber     String      @unique
+  type          FormType
+  status        FormStatus  @default(SUBMITTED)
+  formData      Json
+  adminNotes    String?     @db.Text
+  submittedById String
+  submittedBy   User        @relation("SubmittedForms", fields: [submittedById], references: [id])
+  reviewedById  String?
+  reviewedBy    User?       @relation("ReviewedForms", fields: [reviewedById], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }

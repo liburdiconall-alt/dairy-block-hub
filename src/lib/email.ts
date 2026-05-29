@@ -15,6 +15,7 @@ const transporter = nodemailer.createTransport({
 
 const FROM = process.env.EMAIL_FROM ?? 'Dairy Block Hub <noreply@dairyblock.com>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'conall.liburdi@realberry.com'
 
 // ─── Branded HTML helpers ─────────────────────────────────────────────────────
 
@@ -417,6 +418,71 @@ export async function sendEventStatusUpdateEmail(data: {
     to:      data.recipientEmail,
     subject: `[${data.proposalNumber}] Event Proposal ${isApproved ? 'Approved' : isDenied ? 'Update' : 'Status Update'} — ${data.title}`,
     html,
+  })
+}
+
+export async function sendFormSubmissionConfirmationEmail(
+  to: string,
+  name: string,
+  refNumber: string,
+  formType: string,
+) {
+  const labels: Record<string, string> = {
+    KEY_REQUEST:              'Key / Access Card Request',
+    FITNESS_WAIVER:           'Fitness Center Waiver',
+    PET_REGISTRATION:         'Pet Registration',
+    EMERGENCY_COORDINATOR:    'Emergency Coordinator Form',
+    HANDBOOK_ACKNOWLEDGEMENT: 'Handbook Acknowledgement',
+    RETAIL_SALES_REPORT:      'Monthly Sales Report',
+  }
+  const label = labels[formType] ?? formType
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: `Dairy Block – ${label} Received (${refNumber})`,
+    html: emailWrapper(`
+      <h2 style="color:#1A1A1A;margin:0 0 8px">Form Submitted Successfully</h2>
+      <p style="color:#666;margin:0 0 24px">Hi ${name}, we received your <strong>${label}</strong>.</p>
+      <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:24px">
+        <p style="margin:0;font-size:13px;color:#888;text-transform:uppercase;letter-spacing:.05em">Reference Number</p>
+        <p style="margin:4px 0 0;font-size:22px;font-weight:700;color:#1A1A1A;letter-spacing:.03em">${refNumber}</p>
+      </div>
+      <p style="color:#666;font-size:14px">Our property management team will review your submission and follow up if needed. You can track your submission status in the Tenant Hub.</p>
+    `),
+  })
+}
+
+export async function sendFormSubmissionAdminEmail(
+  tenantName: string,
+  tenantEmail: string,
+  refNumber: string,
+  formType: string,
+  formData: Record<string, unknown>,
+) {
+  const labels: Record<string, string> = {
+    KEY_REQUEST:              'Key / Access Card Request',
+    FITNESS_WAIVER:           'Fitness Center Waiver',
+    PET_REGISTRATION:         'Pet Registration',
+    EMERGENCY_COORDINATOR:    'Emergency Coordinator Form',
+    HANDBOOK_ACKNOWLEDGEMENT: 'Handbook Acknowledgement',
+    RETAIL_SALES_REPORT:      'Monthly Sales Report',
+  }
+  const label = labels[formType] ?? formType
+  const rows = Object.entries(formData)
+    .map(([k, v]) => `<tr><td style="padding:6px 12px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;white-space:nowrap">${k.replace(/([A-Z])/g, ' $1').trim()}</td><td style="padding:6px 12px;color:#1A1A1A;font-size:13px;border-bottom:1px solid #f0f0f0">${v}</td></tr>`)
+    .join('')
+
+  await transporter.sendMail({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `[Dairy Block] New ${label} – ${refNumber}`,
+    html: emailWrapper(`
+      <h2 style="color:#1A1A1A;margin:0 0 8px">New Form Submission</h2>
+      <p style="color:#666;margin:0 0 20px"><strong>${tenantName}</strong> (${tenantEmail}) submitted a <strong>${label}</strong>.</p>
+      <p style="color:#888;font-size:13px;margin:0 0 4px">Reference: <strong style="color:#1A1A1A">${refNumber}</strong></p>
+      <table style="width:100%;border-collapse:collapse;margin-top:16px;border-radius:8px;overflow:hidden;border:1px solid #f0f0f0">${rows}</table>
+      <p style="margin-top:20px;color:#888;font-size:13px">Review in the admin portal.</p>
+    `),
   })
 }
 

@@ -2,15 +2,17 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { LayoutDashboard, PlusCircle, ClipboardList, LogOut, ChevronDown, User, Calendar } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, LogOut, ChevronDown, User, Calendar, BookOpen, FolderOpen, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
 const NAV_LINKS = [
-  { href: '/dashboard',   label: 'Dashboard',      icon: LayoutDashboard },
-  { href: '/requests',    label: 'My Requests',     icon: ClipboardList   },
-  { href: '/requests/new',label: 'New Request',     icon: PlusCircle      },
-  { href: '/events',      label: 'Events',          icon: Calendar        },
+  { href: '/dashboard', label: 'Home',      icon: LayoutDashboard },
+  { href: '/requests',  label: 'Requests',  icon: ClipboardList   },
+  { href: '/events',    label: 'Events',    icon: Calendar        },
+  { href: '/handbook',  label: 'Handbook',  icon: BookOpen        },
+  { href: '/resources', label: 'Resources', icon: FolderOpen      },
+  { href: '/forms',     label: 'Forms',     icon: FileText        },
 ]
 
 export function TenantNav() {
@@ -25,7 +27,7 @@ export function TenantNav() {
         {/* Logo */}
         <Link href="/dashboard" className="flex-shrink-0">
           <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-db-teal block leading-none">Dairy Block</span>
-          <span className="font-display text-db-black font-bold text-base leading-tight">Request Hub</span>
+          <span className="font-display text-db-black font-bold text-base leading-tight">Tenant Hub</span>
         </Link>
 
         {/* Nav links */}
