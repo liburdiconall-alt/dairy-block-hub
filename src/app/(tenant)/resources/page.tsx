@@ -90,8 +90,7 @@ export default async function ResourcesPage() {
             { name: 'Tiffany Frederiksen', title: 'Senior Property Manager',       email: 'tiffany.frederiksen@mcwhinney.com' },
             { name: 'Liam Walsh',          title: 'Property Manager',              email: 'liam.walsh@mcwhinney.com'          },
             { name: 'Ashley Sinclair',     title: 'Senior Property Administrator', email: 'ashley.sinclair@mcwhinney.com'     },
-            { name: 'Nate Couture',        title: 'Marketing Manager',             email: 'nate.couture@mcwhinney.com'        },
-            { name: 'Mary Siegwalt',       title: 'Marketing Coordinator',         email: 'mary.siegwalt@mcwhinney.com'       },
+            { name: 'Laura Aldrich',       title: 'Marketing and Events Manager, Dairy Block', email: 'Laura.Aldrich@realberry.com' },
           ].map(({ name, title, email }) => (
             <div key={name} className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-db-mint flex items-center justify-center flex-shrink-0">
