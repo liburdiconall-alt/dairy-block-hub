@@ -76,12 +76,11 @@ export default async function OfficeHandbookPage() {
             <p className="text-xs font-semibold text-db-gray-400 uppercase tracking-wider mb-3">Property Management</p>
             <div className="space-y-2.5">
               {[
-                { name: 'Scott Vollmer', title: 'General Manager',            email: 'scott.vollmer@mcwhinney.com'      },
-                { name: 'Tiffany Frederiksen', title: 'Senior Property Manager', email: 'tiffany.frederiksen@mcwhinney.com' },
-                { name: 'Liam Walsh',    title: 'Property Manager',           email: 'liam.walsh@mcwhinney.com'         },
-                { name: 'Ashley Sinclair', title: 'Senior Property Administrator', email: 'ashley.sinclair@mcwhinney.com' },
-                { name: 'Nate Couture',  title: 'Marketing Manager',          email: 'nate.couture@mcwhinney.com'       },
-                { name: 'Mary Siegwalt', title: 'Marketing Coordinator',      email: 'mary.siegwalt@mcwhinney.com'      },
+                { name: 'Scott Vollmer',       title: 'General Manager',                    email: 'scott.vollmer@realberry.com'       },
+                { name: 'Tiffany Frederiksen', title: 'Senior Property Manager',            email: 'tiffany.frederiksen@realberry.com' },
+                { name: 'Liam Walsh',          title: 'Property Manager',                   email: 'liam.walsh@realberry.com'          },
+                { name: 'Ashley Sinclair',     title: 'Senior Property Administrator',      email: 'ashley.sinclair@realberry.com'     },
+                { name: 'Laura Aldrich',       title: 'Marketing and Events Manager',       email: 'Laura.Aldrich@realberry.com'       },
               ].map(({ name, title, email }) => (
                 <div key={name}>
                   <p className="text-sm font-medium text-db-black">{name}</p>

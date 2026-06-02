@@ -1,32 +1,52 @@
 import type { Metadata } from 'next'
-import { Syne, Playfair_Display, Inter, Dancing_Script } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { Providers } from './providers'
 
-const syne = Syne({
-  subsets: ['latin'],
-  variable: '--font-syne',
-  weight: ['400', '500', '600', '700', '800'],
+// ── Brand Fonts (Dairy Block Guidelines) ──────────────────────────────────────
+// Display / Headlines: Jokker Medium
+const jokkerMedium = localFont({
+  src: [
+    { path: '../../public/fonts/Jokker-Medium.woff2', weight: '500', style: 'normal' },
+    { path: '../../public/fonts/Jokker-Medium.woff',  weight: '500', style: 'normal' },
+  ],
+  variable: '--font-jokker-medium',
+  display: 'swap',
 })
 
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-playfair',
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+// Primary header: Jokker Regular
+const jokkerRegular = localFont({
+  src: [
+    { path: '../../public/fonts/Jokker-Regular.woff2', weight: '400', style: 'normal' },
+    { path: '../../public/fonts/Jokker-Regular.woff',  weight: '400', style: 'normal' },
+  ],
+  variable: '--font-jokker',
+  display: 'swap',
 })
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  weight: ['300', '400', '500', '600', '700'],
+// Secondary headers: Awesome Serif Medium Tall
+const awesomeSerif = localFont({
+  src: [
+    { path: '../../public/fonts/AwesomeSerif-MediumTall.otf',       weight: '500', style: 'normal' },
+    { path: '../../public/fonts/AwesomeSerifItalic-MediumTall.otf', weight: '500', style: 'italic' },
+  ],
+  variable: '--font-awesome-serif',
+  display: 'swap',
 })
 
-const dancing = Dancing_Script({
-  subsets: ['latin'],
-  variable: '--font-dancing',
-  weight: ['500', '600'],
+// Body copy: Monas Grotesk Light
+const monasGrotesk = localFont({
+  src: { path: '../../public/fonts/MonasGrotesk-Light.otf', weight: '300', style: 'normal' },
+  variable: '--font-monas',
+  display: 'swap',
+})
+
+// Design element: San Clemente Script (max once per page)
+const sanClemente = localFont({
+  src: { path: '../../public/fonts/SanClemente-Script.otf', weight: '400', style: 'normal' },
+  variable: '--font-san-clemente',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -34,13 +54,13 @@ export const metadata: Metadata = {
     default: 'Dairy Block Hub',
     template: '%s · Dairy Block Hub',
   },
-  description: "Maintenance & Security Request Hub for Dairy Block, Denver's premier LoDo micro-district.",
+  description: "Tenant Hub for Dairy Block, Denver's premier LoDo micro-district.",
   icons: { icon: '/favicon.ico' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${syne.variable} ${playfair.variable} ${inter.variable} ${dancing.variable}`}>
+    <html lang="en" className={`${jokkerMedium.variable} ${jokkerRegular.variable} ${awesomeSerif.variable} ${monasGrotesk.variable} ${sanClemente.variable}`}>
       <body>
         <Providers>
           {children}
@@ -48,7 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             position="top-right"
             toastOptions={{
               style: {
-                fontFamily: 'var(--font-inter)',
+                fontFamily: 'var(--font-monas)',
                 fontSize: '14px',
                 borderRadius: '12px',
                 border: '1px solid #E5E7EB',

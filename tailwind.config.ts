@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'db-black':      '#1A1A1A',
+        'db-black':      '#000000',
         'db-white':      '#FFFFFF',
         'db-mint':       '#C4DBCB',
         'db-mint-light': '#E8F2EC',
@@ -33,10 +33,16 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ['var(--font-syne)', 'sans-serif'],
-        serif:   ['var(--font-playfair)', 'serif'],
-        sans:    ['var(--font-inter)', 'sans-serif'],
-        script:  ['var(--font-dancing)', 'cursive'],
+        // Jokker Medium  — display type & headlines (brand primary)
+        display: ['var(--font-jokker-medium)', 'sans-serif'],
+        // Jokker Regular — primary headers
+        heading: ['var(--font-jokker)', 'sans-serif'],
+        // Awesome Serif Medium Tall — secondary headers
+        serif:   ['var(--font-awesome-serif)', 'serif'],
+        // Monas Grotesk Light — body copy
+        sans:    ['var(--font-monas)', 'sans-serif'],
+        // San Clemente Script — design element (max once per page)
+        script:  ['var(--font-san-clemente)', 'cursive'],
       },
       borderRadius: {
         '4xl': '2rem',
