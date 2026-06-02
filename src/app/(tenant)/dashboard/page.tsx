@@ -12,9 +12,17 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
 
-  const [recentRequests, myEvents] = await Promise.all([
+  const [recentRequests, myEvents, announcements] = await Promise.all([
     prisma.request.count({ where: { submittedById: session.user.id } }),
     prisma.eventProposal.count({ where: { submittedById: session.user.id, status: { in: ['SUBMITTED', 'UNDER_REVIEW'] } } }),
+    prisma.announcement.findMany({
+      where: {
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+    }),
   ])
 
   const firstName = session.user.name?.split(' ')[0] ?? 'there'
@@ -71,6 +79,30 @@ export default async function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* Announcements */}
+      {announcements.length > 0 && (
+        <div className="space-y-3">
+          {announcements.map(a => (
+            <div key={a.id} className={`db-card p-4 border ${
+              a.type === 'URGENT'  ? 'bg-red-50 border-db-red'        :
+              a.type === 'WARNING' ? 'bg-amber-50 border-amber-200'   :
+                                     'bg-blue-50 border-blue-200'
+            }`}>
+              <p className={`text-sm font-bold mb-0.5 ${
+                a.type === 'URGENT'  ? 'text-db-red'     :
+                a.type === 'WARNING' ? 'text-amber-700'  :
+                                       'text-blue-700'
+              }`}>{a.title}</p>
+              <p className={`text-xs ${
+                a.type === 'URGENT'  ? 'text-db-red/80'    :
+                a.type === 'WARNING' ? 'text-amber-700/80' :
+                                       'text-blue-700/80'
+              }`}>{a.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Two-column: Key Contacts + Building Hours */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { ReactNode, ElementType } from 'react'
@@ -42,6 +43,11 @@ export default async function OfficeHandbookPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
 
+  const sections = await prisma.handbookSection.findMany({
+    where: { handbook: 'OFFICE', isActive: true },
+    orderBy: { sortOrder: 'asc' },
+  })
+
   return (
     <div className="animate-fade-in max-w-3xl mx-auto space-y-8">
       <Link href="/handbook" className="inline-flex items-center gap-1.5 text-sm text-db-gray-400 hover:text-db-black transition-colors">
@@ -55,6 +61,18 @@ export default async function OfficeHandbookPage() {
         <p className="text-white/50 text-sm mt-2">Your guide to building policies, procedures, and resources.</p>
         <p className="text-white/30 text-xs mt-4">1800 Wazee Street, Suite 200 · Denver, CO 80202</p>
       </div>
+
+      {/* DB-driven sections */}
+      {sections.length > 0 && (
+        <div className="space-y-6">
+          {sections.map(section => (
+            <InfoCard key={section.id}>
+              <h2 className="font-display text-base font-bold text-db-black mb-2">{section.title}</h2>
+              <p className="text-sm text-db-gray-600 leading-relaxed whitespace-pre-wrap">{section.content}</p>
+            </InfoCard>
+          ))}
+        </div>
+      )}
 
       {/* Welcome */}
       <InfoCard>

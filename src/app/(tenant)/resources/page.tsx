@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { ReactNode, ElementType } from 'react'
@@ -35,6 +36,15 @@ function ContactRow({ icon: Icon, label, value, href }: {
 export default async function ResourcesPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
+
+  const [dbContacts, dbHours] = await Promise.all([
+    prisma.staffContact.findMany({ where: { isActive: true }, orderBy: [{ category: 'asc' }, { sortOrder: 'asc' }] }),
+    prisma.buildingHours.findMany({ orderBy: { sortOrder: 'asc' } }),
+  ])
+
+  const managementContacts = dbContacts.filter(c => c.category === 'MANAGEMENT')
+  const securityContacts   = dbContacts.filter(c => c.category === 'SECURITY')
+  const maintenanceContacts = dbContacts.filter(c => c.category === 'MAINTENANCE')
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto space-y-8">
@@ -85,14 +95,8 @@ export default async function ResourcesPage() {
           <ContactRow icon={Mail} label="General Inquiries" value="pm@dairyblock.com" href="mailto:pm@dairyblock.com" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 mt-4">
-          {[
-            { name: 'Scott Vollmer',       title: 'General Manager',               email: 'scott.vollmer@realberry.com'       },
-            { name: 'Tiffany Frederiksen', title: 'Senior Property Manager',       email: 'tiffany.frederiksen@realberry.com' },
-            { name: 'Liam Walsh',          title: 'Property Manager',              email: 'liam.walsh@realberry.com'          },
-            { name: 'Ashley Sinclair',     title: 'Senior Property Administrator', email: 'ashley.sinclair@realberry.com'     },
-            { name: 'Laura Aldrich',       title: 'Marketing and Events Manager, Dairy Block', email: 'Laura.Aldrich@realberry.com' },
-          ].map(({ name, title, email }) => (
-            <div key={name} className="flex items-start gap-3">
+          {managementContacts.map(({ id, name, title, email }) => (
+            <div key={id} className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-db-mint flex items-center justify-center flex-shrink-0">
                 <span className="text-db-teal text-xs font-bold">{name.charAt(0)}</span>
               </div>
@@ -124,9 +128,10 @@ export default async function ResourcesPage() {
             <ContactRow icon={Phone} label="Security Desk"         value="(303) 297-3312"          href="tel:3032973312"              />
             <ContactRow icon={Mail}  label="Security Email"        value="security@dairyblock.com" href="mailto:security@dairyblock.com" />
           </div>
-          <div className="mt-3 pt-3 border-t border-db-gray-100">
-            <p className="text-xs text-db-gray-400">Josh Boyles — Safety Operations Manager</p>
-            <p className="text-xs text-db-gray-400">Marjhonna Brown — Site Supervisor</p>
+          <div className="mt-3 pt-3 border-t border-db-gray-100 space-y-0.5">
+            {securityContacts.map(c => (
+              <p key={c.id} className="text-xs text-db-gray-400">{c.name} — {c.title}</p>
+            ))}
           </div>
         </ResourceCard>
 
@@ -138,10 +143,10 @@ export default async function ResourcesPage() {
             <ContactRow icon={Phone} label="After-Hours (alt)"       value="(970) 962-0011" href="tel:9709620011" />
             <ContactRow icon={Mail}  label="Work Orders"             value="pm@dairyblock.com" href="mailto:pm@dairyblock.com" />
           </div>
-          <div className="mt-3 pt-3 border-t border-db-gray-100">
-            <p className="text-xs text-db-gray-400">Rick Agema — Lead Maintenance Technician</p>
-            <p className="text-xs text-db-gray-400">Reid Maddux — Maintenance Technician</p>
-            <p className="text-xs text-db-gray-400">Marlon Velasquez — Maintenance Technician</p>
+          <div className="mt-3 pt-3 border-t border-db-gray-100 space-y-0.5">
+            {maintenanceContacts.map(c => (
+              <p key={c.id} className="text-xs text-db-gray-400">{c.name} — {c.title}</p>
+            ))}
           </div>
         </ResourceCard>
 
@@ -187,14 +192,9 @@ export default async function ResourcesPage() {
           <div>
             <p className="text-xs font-semibold text-db-gray-400 uppercase tracking-wider mb-3">Regular Hours</p>
             <div className="space-y-2">
-              {[
-                { day: 'Monday – Friday',   hours: '7:00 AM – 9:00 PM' },
-                { day: 'Saturday',          hours: '9:00 AM – 1:00 PM' },
-                { day: 'Sunday',            hours: 'Closed'             },
-                { day: 'Observed Holidays', hours: 'Locked all day'     },
-              ].map(({ day, hours }) => (
-                <div key={day} className="flex justify-between text-sm">
-                  <span className="text-db-gray-500">{day}</span>
+              {dbHours.map(({ id, label, hours }) => (
+                <div key={id} className="flex justify-between text-sm">
+                  <span className="text-db-gray-500">{label}</span>
                   <span className="font-medium text-db-black">{hours}</span>
                 </div>
               ))}

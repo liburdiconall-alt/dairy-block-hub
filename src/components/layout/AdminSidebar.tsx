@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
   LayoutDashboard, Wrench, Shield, Users, Settings,
-  LogOut, ChevronDown, User, UserCog, Calendar, FileText
+  LogOut, ChevronDown, User, UserCog, Calendar, FileText, PenSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
@@ -17,6 +17,7 @@ const MAIN_LINKS = [
   { href: '/admin/submissions', label: 'Submissions', icon: FileText        },
   { href: '/admin/users',       label: 'Users',       icon: UserCog         },
   { href: '/admin/staff',       label: 'Staff',       icon: Users           },
+  { href: '/admin/content',     label: 'Content',     icon: PenSquare       },
   { href: '/admin/settings',    label: 'Settings',    icon: Settings        },
 ]
 
