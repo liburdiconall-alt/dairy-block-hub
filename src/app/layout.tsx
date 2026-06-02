@@ -37,14 +37,14 @@ const awesomeSerif = localFont({
 
 // Body copy: Monas Grotesk Light
 const monasGrotesk = localFont({
-  src: { path: '../../public/fonts/MonasGrotesk-Light.otf', weight: '300', style: 'normal' },
+  src: [{ path: '../../public/fonts/MonasGrotesk-Light.otf', weight: '300', style: 'normal' }],
   variable: '--font-monas',
   display: 'swap',
 })
 
 // Design element: San Clemente Script (max once per page)
 const sanClemente = localFont({
-  src: { path: '../../public/fonts/SanClemente-Script.otf', weight: '400', style: 'normal' },
+  src: [{ path: '../../public/fonts/SanClemente-Script.otf', weight: '400', style: 'normal' }],
   variable: '--font-san-clemente',
   display: 'swap',
 })
