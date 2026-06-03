@@ -4,16 +4,18 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import {
-  Wrench, Shield, Calendar, BookOpen, FolderOpen, FileText,
-  ChevronRight, Phone, Mail,
+  Wrench, Calendar, BookOpen, FolderOpen, FileText,
+  ChevronRight, Phone, Mail, ExternalLink,
 } from 'lucide-react'
+
+const MAINTENANCE_URL = 'https://commercialcafe.securecafe3.com/newtenantportal/content2/login/?companyID=h0yCoqP2qZOdtuz0orow4Q%3D%3D&propertyID=Uui7zyktEfRRznZx-jS7Xg%3D%3D'
+const TEAMUP_URL      = 'https://teamup.com/kst351p9bj5xy5jia6'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
 
-  const [recentRequests, myEvents, announcements] = await Promise.all([
-    prisma.request.count({ where: { submittedById: session.user.id } }),
+  const [myEvents, announcements] = await Promise.all([
     prisma.eventProposal.count({ where: { submittedById: session.user.id, status: { in: ['SUBMITTED', 'UNDER_REVIEW'] } } }),
     prisma.announcement.findMany({
       where: {
@@ -37,33 +39,46 @@ export default async function DashboardPage() {
           <h1 className="font-display text-2xl font-bold text-white">Hi, {firstName} 👋</h1>
           <p className="text-white/50 text-sm mt-1">Your Dairy Block Tenant Hub</p>
         </div>
-        <div className="hidden sm:flex items-center gap-4">
-          {recentRequests > 0 && (
-            <div className="text-center">
-              <p className="text-2xl font-bold text-white">{recentRequests}</p>
-              <p className="text-xs text-white/50">Requests</p>
-            </div>
-          )}
-          {myEvents > 0 && (
-            <div className="text-center">
-              <p className="text-2xl font-bold text-db-orange">{myEvents}</p>
-              <p className="text-xs text-white/50">Active Events</p>
-            </div>
-          )}
-        </div>
+        {myEvents > 0 && (
+          <div className="hidden sm:block text-center">
+            <p className="text-2xl font-bold text-db-orange">{myEvents}</p>
+            <p className="text-xs text-white/50">Active Events</p>
+          </div>
+        )}
       </div>
+
+      {/* Maintenance & Security — external link banner */}
+      <a
+        href={MAINTENANCE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="db-card p-5 flex items-center justify-between gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group border-l-4 border-db-teal"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-db-mint-light flex items-center justify-center flex-shrink-0">
+            <Wrench size={20} className="text-db-teal" />
+          </div>
+          <div>
+            <p className="font-semibold text-db-black text-sm group-hover:text-db-teal transition-colors">
+              Submit a Maintenance or Security Request
+            </p>
+            <p className="text-xs text-db-gray-400 mt-0.5">Opens the Dairy Block tenant request portal in a new tab</p>
+          </div>
+        </div>
+        <ExternalLink size={16} className="text-db-gray-300 group-hover:text-db-teal transition-colors flex-shrink-0" />
+      </a>
 
       {/* Quick Actions Grid */}
       <div>
         <h2 className="font-display text-lg font-bold text-db-black mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+          {/* Internal links */}
           {[
-            { href: '/requests/new', icon: Wrench,    label: 'Submit Request',   sub: 'Maintenance or security', color: 'text-db-teal',    bg: 'bg-db-mint-light' },
-            { href: '/events/new',   icon: Calendar,  label: 'Plan an Event',    sub: 'Submit a proposal',       color: 'text-db-orange',  bg: 'bg-orange-50'     },
-            { href: '/forms',        icon: FileText,  label: 'Forms & Docs',     sub: 'Keys, pets, fitness',     color: 'text-purple-600', bg: 'bg-purple-50'     },
-            { href: '/handbook',     icon: BookOpen,  label: 'Tenant Handbook',  sub: 'Rules & policies',        color: 'text-blue-600',   bg: 'bg-blue-50'       },
-            { href: '/resources',    icon: FolderOpen,label: 'Resources',        sub: 'Contacts & info',         color: 'text-amber-600',  bg: 'bg-amber-50'      },
-            { href: '/requests',     icon: Shield,    label: 'My Requests',      sub: 'Track your tickets',      color: 'text-db-teal',    bg: 'bg-db-mint-light' },
+            { href: '/events/new',   icon: Calendar,   label: 'Plan an Event',   sub: 'Submit a proposal',   color: 'text-db-orange',  bg: 'bg-orange-50'  },
+            { href: '/forms',        icon: FileText,   label: 'Forms & Docs',    sub: 'Keys, pets, fitness', color: 'text-purple-600', bg: 'bg-purple-50'  },
+            { href: '/handbook',     icon: BookOpen,   label: 'Tenant Handbook', sub: 'Rules & policies',    color: 'text-blue-600',   bg: 'bg-blue-50'    },
+            { href: '/resources',    icon: FolderOpen, label: 'Resources',       sub: 'Contacts & info',     color: 'text-amber-600',  bg: 'bg-amber-50'   },
           ].map(({ href, icon: Icon, label, sub, color, bg }) => (
             <Link key={href} href={href}
               className="db-card p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group flex flex-col gap-3"
@@ -77,6 +92,37 @@ export default async function DashboardPage() {
               </div>
             </Link>
           ))}
+
+          {/* External: Events Calendar */}
+          <a href={TEAMUP_URL} target="_blank" rel="noopener noreferrer"
+            className="db-card p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group flex flex-col gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-db-mint-light flex items-center justify-center">
+              <Calendar size={20} className="text-db-teal" />
+            </div>
+            <div>
+              <p className="font-semibold text-db-black text-sm group-hover:text-db-teal transition-colors flex items-center gap-1">
+                Events Calendar <ExternalLink size={11} className="text-db-gray-300" />
+              </p>
+              <p className="text-xs text-db-gray-400 mt-0.5">Dairy Block TeamUp calendar</p>
+            </div>
+          </a>
+
+          {/* External: Maintenance/Security */}
+          <a href={MAINTENANCE_URL} target="_blank" rel="noopener noreferrer"
+            className="db-card p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group flex flex-col gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-db-mint-light flex items-center justify-center">
+              <Wrench size={20} className="text-db-teal" />
+            </div>
+            <div>
+              <p className="font-semibold text-db-black text-sm group-hover:text-db-teal transition-colors flex items-center gap-1">
+                Maintenance & Security <ExternalLink size={11} className="text-db-gray-300" />
+              </p>
+              <p className="text-xs text-db-gray-400 mt-0.5">Submit a request via tenant portal</p>
+            </div>
+          </a>
+
         </div>
       </div>
 

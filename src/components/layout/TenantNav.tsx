@@ -2,13 +2,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { LayoutDashboard, ClipboardList, LogOut, ChevronDown, User, Calendar, BookOpen, FolderOpen, FileText } from 'lucide-react'
+import { LayoutDashboard, LogOut, ChevronDown, User, Calendar, BookOpen, FolderOpen, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Home',      icon: LayoutDashboard },
-  { href: '/requests',  label: 'Requests',  icon: ClipboardList   },
   { href: '/events',    label: 'Events',    icon: Calendar        },
   { href: '/handbook',  label: 'Handbook',  icon: BookOpen        },
   { href: '/resources', label: 'Resources', icon: FolderOpen      },

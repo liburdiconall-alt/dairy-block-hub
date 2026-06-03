@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
-  LayoutDashboard, Wrench, Shield, Users, Settings,
+  LayoutDashboard, Users, Settings,
   LogOut, ChevronDown, User, UserCog, Calendar, FileText, PenSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -11,13 +11,11 @@ import { useState, useEffect } from 'react'
 
 const MAIN_LINKS = [
   { href: '/admin/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
-  { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench          },
-  { href: '/admin/security',    label: 'Security',    icon: Shield          },
   { href: '/admin/events',      label: 'Events',      icon: Calendar        },
-  { href: '/admin/submissions', label: 'Submissions', icon: FileText        },
   { href: '/admin/users',       label: 'Users',       icon: UserCog         },
-  { href: '/admin/staff',       label: 'Staff',       icon: Users           },
+  { href: '/admin/submissions', label: 'Submissions', icon: FileText        },
   { href: '/admin/content',     label: 'Content',     icon: PenSquare       },
+  { href: '/admin/staff',       label: 'Staff',       icon: Users           },
   { href: '/admin/settings',    label: 'Settings',    icon: Settings        },
 ]
 

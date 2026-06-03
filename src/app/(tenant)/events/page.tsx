@@ -5,10 +5,12 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 import { EVENT_STATUS_LABELS, EVENT_STATUS_COLORS, EVENT_TYPE_LABELS } from '@/lib/utils'
-import { PlusCircle, Calendar } from 'lucide-react'
+import { PlusCircle, Calendar, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'My Events' }
+
+const TEAMUP_URL = 'https://teamup.com/kst351p9bj5xy5jia6'
 
 export default async function EventsPage() {
   const session = await getServerSession(authOptions)
@@ -31,6 +33,27 @@ export default async function EventsPage() {
           <PlusCircle size={16} /> New Proposal
         </Link>
       </div>
+
+      {/* TeamUp Calendar link */}
+      <a
+        href={TEAMUP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="db-card p-4 flex items-center justify-between gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group border-l-4 border-db-teal"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-db-mint-light flex items-center justify-center flex-shrink-0">
+            <Calendar size={17} className="text-db-teal" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-db-black group-hover:text-db-teal transition-colors">
+              Dairy Block Events Calendar
+            </p>
+            <p className="text-xs text-db-gray-400 mt-0.5">View the full Dairy Block events schedule on TeamUp</p>
+          </div>
+        </div>
+        <ExternalLink size={15} className="text-db-gray-300 group-hover:text-db-teal transition-colors flex-shrink-0" />
+      </a>
 
       {proposals.length === 0 ? (
         <div className="db-card py-20 text-center">
