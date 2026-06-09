@@ -17,6 +17,15 @@ const FROM = process.env.EMAIL_FROM ?? 'Dairy Block Hub <noreply@dairyblock.com>
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'conall.liburdi@realberry.com'
 
+// Build the list of staff recipients for form notifications.
+// Set NOTIFY_EMAILS in Vercel as a comma-separated list to add more recipients
+// e.g. "conall.liburdi@realberry.com,pm@dairyblock.com"
+// Falls back to ADMIN_EMAIL if not set.
+export function getNotifyEmails(): string[] {
+  const raw = process.env.NOTIFY_EMAILS ?? ADMIN_EMAIL
+  return raw.split(',').map(e => e.trim()).filter(Boolean)
+}
+
 // ─── Branded HTML helpers ─────────────────────────────────────────────────────
 
 function emailWrapper(content: string): string {
@@ -472,9 +481,11 @@ export async function sendFormSubmissionAdminEmail(
     .map(([k, v]) => `<tr><td style="padding:6px 12px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;white-space:nowrap">${k.replace(/([A-Z])/g, ' $1').trim()}</td><td style="padding:6px 12px;color:#1A1A1A;font-size:13px;border-bottom:1px solid #f0f0f0">${v}</td></tr>`)
     .join('')
 
+  const recipients = getNotifyEmails()
+
   await transporter.sendMail({
     from: FROM,
-    to: ADMIN_EMAIL,
+    to:   recipients.join(', '),
     subject: `[Dairy Block] New ${label} – ${refNumber}`,
     html: emailWrapper(`
       <h2 style="color:#1A1A1A;margin:0 0 8px">New Form Submission</h2>
