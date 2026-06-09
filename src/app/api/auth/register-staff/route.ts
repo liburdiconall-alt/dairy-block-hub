@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         role:         data.role,
         status:       'PENDING',
         isActive:     false,
-        staffInfo: { create: {} },
+        staffInfo: { create: { department: 'MANAGEMENT' } },
       },
     })
 
