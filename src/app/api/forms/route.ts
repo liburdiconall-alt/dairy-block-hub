@@ -45,8 +45,6 @@ export async function POST(req: NextRequest) {
     select: { email: true },
   })
   const recipientEmails = staffRecipients.map(u => u.email)
-  console.log('[forms/POST] Staff recipients:', recipientEmails)
-
   // Tenant confirmation — isolated so a failure doesn't block staff notification
   try {
     await sendFormSubmissionConfirmationEmail(
