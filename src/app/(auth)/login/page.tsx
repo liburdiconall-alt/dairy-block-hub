@@ -149,11 +149,8 @@ export default function LoginPage() {
       {process.env.NODE_ENV === 'development' && (
         <div className="mt-6 p-4 bg-db-gray-50 rounded-xl border border-db-gray-200 text-xs text-db-gray-400 space-y-1">
           <p className="font-semibold text-db-gray-600 mb-2">Dev credentials</p>
-          <p>Tenant: tenant@dairyblock.com / tenant123!</p>
-          <p>Admin: admin@dairyblock.com / admin123!</p>
-          <p>Manager: manager@dairyblock.com / manager123!</p>
-          <p>Tech: tech@dairyblock.com / tech123!</p>
-          <p>Security: security@dairyblock.com / security123!</p>
+          <p>Demo Tenant Account: tenant@dairyblock.com / tenant123!</p>
+          <p>Demo Property Manager Account: manager@dairyblock.com / manager123!</p>
         </div>
       )}
     </div>
