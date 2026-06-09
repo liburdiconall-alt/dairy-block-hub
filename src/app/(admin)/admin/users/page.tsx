@@ -12,8 +12,9 @@ export default async function UsersPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
 
-  const role = session.user.role
+  const role      = session.user.role
   const canManage = role === 'ADMIN' || role === 'PROPERTY_MANAGER'
+  const isAdmin   = role === 'ADMIN'
 
   const [pending, active, denied] = await Promise.all([
     prisma.user.findMany({
@@ -39,6 +40,7 @@ export default async function UsersPage() {
       active={active}
       denied={denied}
       canManage={canManage}
+      isAdmin={isAdmin}
     />
   )
 }

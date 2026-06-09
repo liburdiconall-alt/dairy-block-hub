@@ -230,6 +230,37 @@ export async function sendEmergencyAlert(
 
 // ─── Access request / approval emails ────────────────────────────────────────
 
+export async function sendStaffAccessRequestAdminEmail(data: {
+  applicantName:  string
+  applicantEmail: string
+  requestedRole:  string
+  adminEmails:    string[]
+}) {
+  const reviewUrl = `${APP_URL}/admin/users`
+  const html = emailWrapper(`
+    <h2 style="margin:0 0 8px;font-size:24px;color:#1A1A1A;font-weight:700;">New staff access request.</h2>
+    <p style="margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.7;">
+      A new staff member has requested access to the Dairy Block Hub Staff Portal and is awaiting your approval.
+    </p>
+    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:20px;margin:0 0 24px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:4px 0;font-size:13px;color:#6B7280;width:80px;">Name</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;font-weight:600;">${data.applicantName}</td></tr>
+        <tr><td style="padding:4px 0;font-size:13px;color:#6B7280;">Email</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;">${data.applicantEmail}</td></tr>
+        <tr><td style="padding:4px 0;font-size:13px;color:#6B7280;">Role</td><td style="padding:4px 0;font-size:13px;color:#1A1A1A;font-weight:600;">${data.requestedRole}</td></tr>
+      </table>
+    </div>
+    <p style="margin:0 0 20px;font-size:13px;color:#6B7280;">Only administrators can approve or deny staff account requests.</p>
+    <a href="${reviewUrl}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Review Request →</a>
+  `)
+
+  await transporter.sendMail({
+    from:    FROM,
+    to:      data.adminEmails.join(', '),
+    subject: `New Staff Access Request — ${data.applicantName} (${data.requestedRole})`,
+    html,
+  })
+}
+
 export async function sendAccessRequestAdminEmail(data: {
   applicantName:  string
   applicantEmail: string
@@ -467,6 +498,7 @@ export async function sendFormSubmissionAdminEmail(
   refNumber: string,
   formType: string,
   formData: Record<string, unknown>,
+  recipients?: string[],
 ) {
   const labels: Record<string, string> = {
     KEY_REQUEST:              'Key / Access Card Request',
@@ -481,11 +513,11 @@ export async function sendFormSubmissionAdminEmail(
     .map(([k, v]) => `<tr><td style="padding:6px 12px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;white-space:nowrap">${k.replace(/([A-Z])/g, ' $1').trim()}</td><td style="padding:6px 12px;color:#1A1A1A;font-size:13px;border-bottom:1px solid #f0f0f0">${v}</td></tr>`)
     .join('')
 
-  const recipients = getNotifyEmails()
+  const to = (recipients && recipients.length > 0) ? recipients : getNotifyEmails()
 
   await transporter.sendMail({
     from: FROM,
-    to:   recipients.join(', '),
+    to:   to.join(', '),
     subject: `[Dairy Block] New ${label} – ${refNumber}`,
     html: emailWrapper(`
       <h2 style="color:#1A1A1A;margin:0 0 8px">New Form Submission</h2>

@@ -41,19 +41,29 @@ export async function POST(req: NextRequest) {
 
   // Send emails (non-blocking — never fail the submission over email)
   try {
+    // Tenant confirmation
     await sendFormSubmissionConfirmationEmail(
       submission.submittedBy.email!,
       submission.submittedBy.name ?? 'Tenant',
       refNumber,
       normalizedType,
     )
-    await sendFormSubmissionAdminEmail(
-      submission.submittedBy.name ?? 'Tenant',
-      submission.submittedBy.email!,
-      refNumber,
-      normalizedType,
-      formData,
-    )
+    // Notify all active staff (ADMIN + PROPERTY_MANAGER) — dynamically queried from DB
+    const staffRecipients = await prisma.user.findMany({
+      where:  { role: { in: ['ADMIN', 'PROPERTY_MANAGER'] }, status: 'ACTIVE' },
+      select: { email: true },
+    })
+    const recipientEmails = staffRecipients.map(u => u.email)
+    if (recipientEmails.length > 0) {
+      await sendFormSubmissionAdminEmail(
+        submission.submittedBy.name ?? 'Tenant',
+        submission.submittedBy.email!,
+        refNumber,
+        normalizedType,
+        formData,
+        recipientEmails,
+      )
+    }
   } catch (err) {
     console.error('[forms/POST] Email send failed:', err)
   }

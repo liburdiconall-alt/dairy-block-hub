@@ -25,6 +25,12 @@ export async function PATCH(
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
+  // Staff accounts (any non-tenant role) can only be approved/denied by ADMIN
+  const STAFF_ROLES = ['ADMIN', 'PROPERTY_MANAGER', 'MAINTENANCE_TECH', 'SECURITY_OFFICER', 'VENDOR']
+  if ((action === 'approve' || action === 'deny') && STAFF_ROLES.includes(user.role) && role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Only administrators can approve or deny staff account requests.' }, { status: 403 })
+  }
+
   if (action === 'approve') {
     await prisma.user.update({
       where: { id: params.id },

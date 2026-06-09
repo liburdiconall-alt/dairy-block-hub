@@ -52,7 +52,7 @@ export default function LoginPage() {
       {/* Logo mark (mobile) */}
       <div className="lg:hidden mb-8">
         <span className="section-label text-db-teal text-xs">Dairy Block</span>
-        <p className="font-display text-db-black text-2xl font-bold mt-0.5">Maintenance & Security Hub</p>
+        <p className="font-display text-db-black text-2xl font-bold mt-0.5">Tenant Hub</p>
       </div>
 
       <h1 className="font-display text-3xl font-bold text-db-black mb-1">Welcome back.</h1>
@@ -130,11 +130,17 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="mt-6 pt-6 border-t border-db-gray-100">
+      <div className="mt-6 pt-6 border-t border-db-gray-100 space-y-3">
         <p className="text-sm text-db-gray-400 text-center">
-          New to the hub?{' '}
+          New tenant?{' '}
           <Link href="/register" className="text-db-teal font-medium hover:text-db-teal-dark">
-            Request access
+            Request tenant access
+          </Link>
+        </p>
+        <p className="text-sm text-db-gray-400 text-center">
+          Dairy Block staff?{' '}
+          <Link href="/register/staff" className="text-db-teal font-medium hover:text-db-teal-dark">
+            Request staff access
           </Link>
         </p>
       </div>

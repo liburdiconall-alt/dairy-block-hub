@@ -78,11 +78,28 @@ function DenyModal({ user, onClose, onConfirm }: {
   )
 }
 
-export function UserManagementClient({ pending, active, denied, canManage }: {
+const STAFF_ROLES = ['ADMIN', 'PROPERTY_MANAGER', 'MAINTENANCE_TECH', 'SECURITY_OFFICER', 'VENDOR']
+
+function AccountTypeBadge({ role }: { role: string }) {
+  const isStaff = STAFF_ROLES.includes(role)
+  return (
+    <span className={cn(
+      'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border',
+      isStaff
+        ? 'bg-purple-50 text-purple-700 border-purple-200'
+        : 'bg-blue-50 text-blue-700 border-blue-200'
+    )}>
+      {isStaff ? 'Staff' : 'Tenant'}
+    </span>
+  )
+}
+
+export function UserManagementClient({ pending, active, denied, canManage, isAdmin }: {
   pending:    User[]
   active:     User[]
   denied:     User[]
   canManage:  boolean
+  isAdmin:    boolean
 }) {
   const router = useRouter()
   const [tab, setTab]         = useState<'pending' | 'active' | 'denied'>('pending')
@@ -170,6 +187,7 @@ export function UserManagementClient({ pending, active, denied, canManage }: {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-db-gray-400 uppercase tracking-wide">Name</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-db-gray-400 uppercase tracking-wide">Email</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-db-gray-400 uppercase tracking-wide hidden md:table-cell">Unit / Company</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-db-gray-400 uppercase tracking-wide hidden md:table-cell">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-db-gray-400 uppercase tracking-wide">Role</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-db-gray-400 uppercase tracking-wide hidden md:table-cell">Date</th>
                   {canManage && (
@@ -186,6 +204,9 @@ export function UserManagementClient({ pending, active, denied, canManage }: {
                       {u.tenantInfo?.unit ? `${u.tenantInfo.unit}${u.tenantInfo.building ? ` · ${u.tenantInfo.building}` : ''}` : ''}
                       {u.tenantInfo?.company ? <span className="block text-db-gray-400">{u.tenantInfo.company}</span> : null}
                       {!u.tenantInfo?.unit && !u.tenantInfo?.company ? '—' : null}
+                    </td>
+                    <td className="px-4 py-3.5 hidden md:table-cell">
+                      <AccountTypeBadge role={u.role} />
                     </td>
                     <td className="px-4 py-3.5">
                       {canManage && tab === 'active' ? (
@@ -210,24 +231,30 @@ export function UserManagementClient({ pending, active, denied, canManage }: {
                     {canManage && (
                       <td className="px-4 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {tab === 'pending' && (
-                            <>
-                              <button
-                                onClick={() => callApi(u.id, { action: 'approve' })}
-                                disabled={loading === u.id}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-db-mint-light text-db-teal text-xs font-semibold border border-db-mint hover:bg-db-mint transition-colors disabled:opacity-50"
-                              >
-                                <CheckCircle2 size={13} /> Approve
-                              </button>
-                              <button
-                                onClick={() => setDenyTarget(u)}
-                                disabled={loading === u.id}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-db-red text-xs font-semibold border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
-                              >
-                                <XCircle size={13} /> Deny
-                              </button>
-                            </>
-                          )}
+                          {tab === 'pending' && (() => {
+                            const isStaffAccount = STAFF_ROLES.includes(u.role)
+                            const canActOnThis   = !isStaffAccount || isAdmin
+                            return canActOnThis ? (
+                              <>
+                                <button
+                                  onClick={() => callApi(u.id, { action: 'approve' })}
+                                  disabled={loading === u.id}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-db-mint-light text-db-teal text-xs font-semibold border border-db-mint hover:bg-db-mint transition-colors disabled:opacity-50"
+                                >
+                                  <CheckCircle2 size={13} /> Approve
+                                </button>
+                                <button
+                                  onClick={() => setDenyTarget(u)}
+                                  disabled={loading === u.id}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-db-red text-xs font-semibold border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
+                                >
+                                  <XCircle size={13} /> Deny
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-xs text-db-gray-400 italic">Admin only</span>
+                            )
+                          })()}
                           {tab === 'active' && (
                             <button
                               onClick={() => callApi(u.id, { action: 'deactivate' })}

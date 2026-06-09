@@ -68,8 +68,18 @@ export const securityDetailSchema = z.object({
   reportNumber:    z.string().optional(),
 })
 
+export const staffRegisterSchema = z.object({
+  name:     z.string().min(2, 'Name must be at least 2 characters'),
+  email:    z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Must contain at least one number'),
+  role:     z.enum(['ADMIN', 'PROPERTY_MANAGER'], { required_error: 'Please select an account type' }),
+})
+
 export type LoginInput            = z.infer<typeof loginSchema>
 export type RegisterInput         = z.infer<typeof registerSchema>
+export type StaffRegisterInput    = z.infer<typeof staffRegisterSchema>
 export type NewRequestInput       = z.infer<typeof newRequestSchema>
 export type StatusUpdateInput     = z.infer<typeof statusUpdateSchema>
 export type AssignInput           = z.infer<typeof assignSchema>

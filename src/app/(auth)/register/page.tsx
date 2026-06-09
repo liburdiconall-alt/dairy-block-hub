@@ -103,10 +103,14 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <div className="mt-6 pt-6 border-t border-db-gray-100">
+      <div className="mt-6 pt-6 border-t border-db-gray-100 space-y-3">
         <p className="text-sm text-db-gray-400 text-center">
           Already have access?{' '}
           <Link href="/login" className="text-db-teal font-medium hover:text-db-teal-dark">Sign in</Link>
+        </p>
+        <p className="text-sm text-db-gray-400 text-center">
+          Dairy Block staff?{' '}
+          <Link href="/register/staff" className="text-db-teal font-medium hover:text-db-teal-dark">Request staff access</Link>
         </p>
       </div>
     </div>
