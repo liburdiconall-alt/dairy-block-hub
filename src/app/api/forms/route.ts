@@ -5,6 +5,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateRefNumber } from '@/lib/forms'
 import { sendFormSubmissionConfirmationEmail, sendFormSubmissionAdminEmail } from '@/lib/email'
 
+// Map frontend kebab-case strings → Prisma FormType enum values
+const TYPE_MAP: Record<string, string> = {
+  'key-request':              'KEY_REQUEST',
+  'fitness-waiver':           'FITNESS_WAIVER',
+  'pet-registration':         'PET_REGISTRATION',
+  'emergency-coordinator':    'EMERGENCY_COORDINATOR',
+  'handbook-acknowledgement': 'HANDBOOK_ACKNOWLEDGEMENT',
+  'sales-report':             'RETAIL_SALES_REPORT',
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -14,23 +24,39 @@ export async function POST(req: NextRequest) {
 
   if (!type || !formData) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
-  const refNumber = generateRefNumber(type)
+  // Normalize type to Prisma enum value (accept either format)
+  const normalizedType = TYPE_MAP[type] ?? type
+
+  const refNumber = generateRefNumber(normalizedType)
 
   const submission = await prisma.formSubmission.create({
     data: {
       refNumber,
-      type,
+      type:         normalizedType as any,
       formData,
       submittedById: session.user.id,
     },
     include: { submittedBy: { select: { name: true, email: true } } },
   })
 
-  // Send emails (non-blocking)
+  // Send emails (non-blocking — never fail the submission over email)
   try {
-    await sendFormSubmissionConfirmationEmail(submission.submittedBy.email!, submission.submittedBy.name ?? 'Tenant', refNumber, type)
-    await sendFormSubmissionAdminEmail(submission.submittedBy.name ?? 'Tenant', submission.submittedBy.email!, refNumber, type, formData)
-  } catch {}
+    await sendFormSubmissionConfirmationEmail(
+      submission.submittedBy.email!,
+      submission.submittedBy.name ?? 'Tenant',
+      refNumber,
+      normalizedType,
+    )
+    await sendFormSubmissionAdminEmail(
+      submission.submittedBy.name ?? 'Tenant',
+      submission.submittedBy.email!,
+      refNumber,
+      normalizedType,
+      formData,
+    )
+  } catch (err) {
+    console.error('[forms/POST] Email send failed:', err)
+  }
 
   return NextResponse.json({ refNumber }, { status: 201 })
 }

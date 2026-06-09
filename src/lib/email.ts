@@ -36,7 +36,7 @@ function emailWrapper(content: string): string {
         <tr>
           <td style="background:#1A1A1A;border-radius:12px 12px 0 0;padding:28px 40px;text-align:left;">
             <span style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#C4DBCB;font-weight:600;">Dairy Block</span>
-            <h1 style="margin:4px 0 0;font-size:20px;color:#FFFFFF;font-weight:700;letter-spacing:-0.02em;">Maintenance & Security Hub</h1>
+            <h1 style="margin:4px 0 0;font-size:20px;color:#FFFFFF;font-weight:700;letter-spacing:-0.02em;">Tenant Hub</h1>
           </td>
         </tr>
         <!-- Body -->
@@ -482,6 +482,53 @@ export async function sendFormSubmissionAdminEmail(
       <p style="color:#888;font-size:13px;margin:0 0 4px">Reference: <strong style="color:#1A1A1A">${refNumber}</strong></p>
       <table style="width:100%;border-collapse:collapse;margin-top:16px;border-radius:8px;overflow:hidden;border:1px solid #f0f0f0">${rows}</table>
       <p style="margin-top:20px;color:#888;font-size:13px">Review in the admin portal.</p>
+    `),
+  })
+}
+
+export async function sendFormStatusUpdateEmail(
+  to: string,
+  name: string,
+  refNumber: string,
+  formType: string,
+  newStatus: string,
+  adminNotes?: string,
+) {
+  const labels: Record<string, string> = {
+    KEY_REQUEST:              'Key / Access Card Request',
+    FITNESS_WAIVER:           'Fitness Center Waiver',
+    PET_REGISTRATION:         'Pet Registration',
+    EMERGENCY_COORDINATOR:    'Emergency Coordinator Form',
+    HANDBOOK_ACKNOWLEDGEMENT: 'Handbook Acknowledgement',
+    RETAIL_SALES_REPORT:      'Monthly Sales Report',
+  }
+  const statusLabels: Record<string, { text: string; color: string; message: string }> = {
+    IN_REVIEW:  { text: 'In Review',  color: '#F2A53F', message: 'Our team is currently reviewing your submission.' },
+    COMPLETED:  { text: 'Completed',  color: '#29967F', message: 'Your submission has been reviewed and completed.' },
+    DENIED:     { text: 'Denied',     color: '#F64741', message: 'Your submission could not be processed at this time. Please contact us if you have questions.' },
+  }
+  const label   = labels[formType] ?? formType
+  const status  = statusLabels[newStatus] ?? { text: newStatus, color: '#6B7280', message: 'Your submission status has been updated.' }
+
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: `Dairy Block – ${label} ${status.text} (${refNumber})`,
+    html: emailWrapper(`
+      <h2 style="color:#1A1A1A;margin:0 0 8px">Submission Update</h2>
+      <p style="color:#666;margin:0 0 24px">Hi ${name}, here's an update on your <strong>${label}</strong>.</p>
+      <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#888;text-transform:uppercase;letter-spacing:.05em">Reference Number</p>
+        <p style="margin:4px 0 8px;font-size:20px;font-weight:700;color:#1A1A1A;letter-spacing:.03em">${refNumber}</p>
+        <span style="display:inline-block;background:${status.color}20;color:${status.color};border:1px solid ${status.color}40;border-radius:4px;padding:3px 10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${status.text}</span>
+      </div>
+      <p style="color:#666;font-size:14px;line-height:1.7;">${status.message}</p>
+      ${adminNotes ? `
+      <div style="margin-top:20px;background:#E8F2EC;border-left:3px solid #29967F;padding:12px 16px;border-radius:0 6px 6px 0;">
+        <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#29967F;text-transform:uppercase;letter-spacing:.05em">Note from the team</p>
+        <p style="margin:0;font-size:14px;color:#1A1A1A;">${adminNotes}</p>
+      </div>` : ''}
+      <p style="margin-top:20px;color:#888;font-size:13px;">Questions? Log in to the Tenant Hub or reply to this email.</p>
     `),
   })
 }
