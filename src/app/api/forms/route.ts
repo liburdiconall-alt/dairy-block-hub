@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       select: { email: true },
     })
     const recipientEmails = staffRecipients.map(u => u.email)
+    console.log('[forms/POST] Staff recipients:', recipientEmails)
     if (recipientEmails.length > 0) {
       await sendFormSubmissionAdminEmail(
         submission.submittedBy.name ?? 'Tenant',
