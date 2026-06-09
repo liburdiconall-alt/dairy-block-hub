@@ -39,23 +39,29 @@ export async function POST(req: NextRequest) {
     include: { submittedBy: { select: { name: true, email: true } } },
   })
 
-  // Send emails (non-blocking — never fail the submission over email)
+  // Query staff recipients first (outside try/catch — this must always run)
+  const staffRecipients = await prisma.user.findMany({
+    where:  { role: { in: ['ADMIN', 'PROPERTY_MANAGER'] }, status: 'ACTIVE' },
+    select: { email: true },
+  })
+  const recipientEmails = staffRecipients.map(u => u.email)
+  console.log('[forms/POST] Staff recipients:', recipientEmails)
+
+  // Tenant confirmation — isolated so a failure doesn't block staff notification
   try {
-    // Tenant confirmation
     await sendFormSubmissionConfirmationEmail(
       submission.submittedBy.email!,
       submission.submittedBy.name ?? 'Tenant',
       refNumber,
       normalizedType,
     )
-    // Notify all active staff (ADMIN + PROPERTY_MANAGER) — dynamically queried from DB
-    const staffRecipients = await prisma.user.findMany({
-      where:  { role: { in: ['ADMIN', 'PROPERTY_MANAGER'] }, status: 'ACTIVE' },
-      select: { email: true },
-    })
-    const recipientEmails = staffRecipients.map(u => u.email)
-    console.log('[forms/POST] Staff recipients:', recipientEmails)
-    if (recipientEmails.length > 0) {
+  } catch (err) {
+    console.error('[forms/POST] Tenant confirmation email failed:', err)
+  }
+
+  // Staff notification — isolated so a failure doesn't affect the tenant email
+  if (recipientEmails.length > 0) {
+    try {
       await sendFormSubmissionAdminEmail(
         submission.submittedBy.name ?? 'Tenant',
         submission.submittedBy.email!,
@@ -64,9 +70,9 @@ export async function POST(req: NextRequest) {
         formData,
         recipientEmails,
       )
+    } catch (err) {
+      console.error('[forms/POST] Staff notification email failed:', err)
     }
-  } catch (err) {
-    console.error('[forms/POST] Email send failed:', err)
   }
 
   return NextResponse.json({ refNumber }, { status: 201 })
