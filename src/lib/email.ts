@@ -1,17 +1,39 @@
 import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import { render } from '@react-email/render'
 import { TicketStatus, Urgency } from '@prisma/client'
 import { STATUS_LABELS, URGENCY_LABELS } from './utils'
 
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+
 const transporter = nodemailer.createTransport({
   host:   process.env.EMAIL_SERVER_HOST,
   port:   Number(process.env.EMAIL_SERVER_PORT ?? 587),
-  secure: false,
+  secure: Number(process.env.EMAIL_SERVER_PORT) === 465,
   auth: {
     user: process.env.EMAIL_SERVER_USER,
     pass: process.env.EMAIL_SERVER_PASSWORD,
   },
 })
+
+async function sendEmail(opts: { from: string; to: string | string[]; subject: string; html: string }) {
+  const toArray = Array.isArray(opts.to)
+    ? opts.to
+    : opts.to.split(',').map(e => e.trim()).filter(Boolean)
+
+  if (resend) {
+    const { error } = await resend.emails.send({
+      from:    opts.from,
+      to:      toArray,
+      subject: opts.subject,
+      html:    opts.html,
+    })
+    if (error) throw new Error(error.message)
+    return
+  }
+
+  await sendEmail({ from: opts.from, to: toArray.join(', '), subject: opts.subject, html: opts.html })
+}
 
 const FROM = process.env.EMAIL_FROM ?? 'Dairy Block Hub <noreply@dairyblock.com>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -119,7 +141,7 @@ export async function sendConfirmationEmail(data: TicketEmailData) {
     </p>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to: data.recipientEmail,
     subject: `[${data.ticketNumber}] Request Received — ${data.title}`,
@@ -143,7 +165,7 @@ export async function sendStatusUpdateEmail(
     ${ticketCard({ ...data, url })}
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to: data.recipientEmail,
     subject: `[${data.ticketNumber}] Status Update: ${STATUS_LABELS[data.status]}`,
@@ -171,7 +193,7 @@ export async function sendDenialEmail(
     <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Submit a New Request →</a>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to: data.recipientEmail,
     subject: `[${data.ticketNumber}] Request Update`,
@@ -195,7 +217,7 @@ export async function sendCompletionEmail(data: TicketEmailData) {
     </div>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to: data.recipientEmail,
     subject: `[${data.ticketNumber}] Completed ✓ — ${data.title}`,
@@ -220,7 +242,7 @@ export async function sendEmergencyAlert(
     <a href="${url}" style="display:inline-block;background:#F64741;color:#FFFFFF;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;font-weight:700;">Respond Now →</a>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to: staffEmails.join(', '),
     subject: `🚨 EMERGENCY [${data.ticketNumber}] — ${data.title}`,
@@ -253,7 +275,7 @@ export async function sendStaffAccessRequestAdminEmail(data: {
     <a href="${reviewUrl}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Review Request →</a>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from:    FROM,
     to:      data.adminEmails.join(', '),
     subject: `New Staff Access Request — ${data.applicantName} (${data.requestedRole})`,
@@ -287,7 +309,7 @@ export async function sendAccessRequestAdminEmail(data: {
     <a href="${reviewUrl}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Review Request →</a>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from:    FROM,
     to:      data.adminEmails.join(', '),
     subject: `New Access Request — ${data.applicantName}`,
@@ -312,7 +334,7 @@ export async function sendAccessApprovedEmail(data: {
     </p>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from:    FROM,
     to:      data.recipientEmail,
     subject: 'Your Dairy Block Hub access has been approved',
@@ -342,7 +364,7 @@ export async function sendAccessDeniedEmail(data: {
     </p>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from:    FROM,
     to:      data.recipientEmail,
     subject: 'Update on your Dairy Block Hub access request',
@@ -376,7 +398,7 @@ export async function sendEventProposalConfirmationEmail(data: {
     </div>
     <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Track Proposal →</a>
   `)
-  await transporter.sendMail({
+  await sendEmail({
     from:    FROM,
     to:      data.recipientEmail,
     subject: `[${data.proposalNumber}] Event Proposal Received — ${data.title}`,
@@ -412,7 +434,7 @@ export async function sendEventProposalAdminEmail(data: {
     </div>
     <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Review Proposal →</a>
   `)
-  await transporter.sendMail({
+  await sendEmail({
     from:    FROM,
     to:      data.adminEmails.join(', '),
     subject: `[${data.proposalNumber}] New Event Proposal — ${data.title}`,
@@ -453,7 +475,7 @@ export async function sendEventStatusUpdateEmail(data: {
     </div>` : ''}
     <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">View Proposal →</a>
   `)
-  await transporter.sendMail({
+  await sendEmail({
     from:    FROM,
     to:      data.recipientEmail,
     subject: `[${data.proposalNumber}] Event Proposal ${isApproved ? 'Approved' : isDenied ? 'Update' : 'Status Update'} — ${data.title}`,
@@ -476,7 +498,7 @@ export async function sendFormSubmissionConfirmationEmail(
     RETAIL_SALES_REPORT:      'Monthly Sales Report',
   }
   const label = labels[formType] ?? formType
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to,
     subject: `Dairy Block – ${label} Received (${refNumber})`,
@@ -515,7 +537,7 @@ export async function sendFormSubmissionAdminEmail(
 
   const to = (recipients && recipients.length > 0) ? recipients : getNotifyEmails()
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to:   to.join(', '),
     subject: `[Dairy Block] New ${label} – ${refNumber}`,
@@ -553,7 +575,7 @@ export async function sendFormStatusUpdateEmail(
   const label   = labels[formType] ?? formType
   const status  = statusLabels[newStatus] ?? { text: newStatus, color: '#6B7280', message: 'Your submission status has been updated.' }
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to,
     subject: `Dairy Block – ${label} ${status.text} (${refNumber})`,
@@ -590,7 +612,7 @@ export async function sendNewTicketAlert(
     <a href="${url}" style="display:inline-block;background:#1A1A1A;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Review Ticket →</a>
   `)
 
-  await transporter.sendMail({
+  await sendEmail({
     from: FROM,
     to: staffEmails.join(', '),
     subject: `[${data.ticketNumber}] New ${data.type} Request — ${data.title}`,
