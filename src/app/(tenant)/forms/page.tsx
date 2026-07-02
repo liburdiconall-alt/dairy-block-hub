@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Key, Dumbbell, PawPrint, AlertCircle, BookOpen, BarChart2, ChevronRight } from 'lucide-react'
+import { Key, Dumbbell, PawPrint, AlertCircle, BookOpen, BarChart2, ChevronRight, ClipboardList } from 'lucide-react'
 
 const FORM_CATEGORIES = [
   {
@@ -82,9 +82,18 @@ export default async function FormsPage() {
   return (
     <div className="animate-fade-in max-w-3xl mx-auto space-y-8">
 
-      <div>
-        <h1 className="font-display text-2xl font-bold text-db-black">Forms & Documents</h1>
-        <p className="text-db-gray-500 mt-1 text-sm">Submit required forms and requests to Property Management.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-db-black">Forms & Documents</h1>
+          <p className="text-db-gray-500 mt-1 text-sm">Submit required forms and requests to Property Management.</p>
+        </div>
+        <Link
+          href="/forms/submissions"
+          className="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-db-gray-200 text-db-gray-600 text-sm font-semibold hover:border-db-teal hover:text-db-teal transition-colors"
+        >
+          <ClipboardList size={15} />
+          My Submissions
+        </Link>
       </div>
 
       {FORM_CATEGORIES.map(({ category, forms }) => (

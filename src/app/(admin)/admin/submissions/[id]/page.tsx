@@ -7,11 +7,13 @@ import { ArrowLeft } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import { FORM_TYPE_LABELS, FORM_STATUS_LABELS, FORM_STATUS_COLORS } from '@/lib/forms'
 import { FormSubmissionControls } from './FormSubmissionControls'
+import { DownloadPDFButton } from '@/components/DownloadPDFButton'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Form Submission Detail' }
 
-export default async function AdminSubmissionDetailPage({ params }: { params: { id: string } }) {
+export default async function AdminSubmissionDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
 
@@ -19,7 +21,7 @@ export default async function AdminSubmissionDetailPage({ params }: { params: { 
   if (role !== 'ADMIN' && role !== 'PROPERTY_MANAGER') redirect('/admin/dashboard')
 
   const submission = await prisma.formSubmission.findUnique({
-    where:   { refNumber: params.id },
+    where:   { refNumber: id },
     include: {
       submittedBy: { select: { name: true, email: true, tenantInfo: true } },
       reviewedBy:  { select: { name: true } },
@@ -29,6 +31,26 @@ export default async function AdminSubmissionDetailPage({ params }: { params: { 
   if (!submission) notFound()
 
   const formData = submission.formData as Record<string, unknown>
+
+  const strippedFormData = { ...formData }
+  delete strippedFormData.supportingReportData
+
+  const pdfData = {
+    refNumber:   submission.refNumber,
+    type:        submission.type,
+    status:      submission.status,
+    formData:    strippedFormData,
+    adminNotes:  submission.adminNotes,
+    createdAt:   submission.createdAt.toISOString(),
+    submittedBy: {
+      name:       submission.submittedBy.name ?? '',
+      email:      submission.submittedBy.email ?? '',
+      tenantInfo: submission.submittedBy.tenantInfo
+        ? { unit: submission.submittedBy.tenantInfo.unit ?? null, company: submission.submittedBy.tenantInfo.company ?? null }
+        : null,
+    },
+    reviewedBy: submission.reviewedBy ? { name: submission.reviewedBy.name ?? '' } : null,
+  }
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
@@ -51,9 +73,12 @@ export default async function AdminSubmissionDetailPage({ params }: { params: { 
                 </h1>
                 <p className="text-xs text-db-gray-400 mt-1">Submitted {formatDateTime(submission.createdAt)}</p>
               </div>
-              <span className={`db-badge shrink-0 ${FORM_STATUS_COLORS[submission.status]}`}>
-                {FORM_STATUS_LABELS[submission.status]}
-              </span>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <span className={`db-badge ${FORM_STATUS_COLORS[submission.status]}`}>
+                  {FORM_STATUS_LABELS[submission.status]}
+                </span>
+                <DownloadPDFButton submission={pdfData} variant="outline" />
+              </div>
             </div>
           </div>
 

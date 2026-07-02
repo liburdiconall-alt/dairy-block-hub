@@ -128,14 +128,16 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
 }
 
 export const EVENT_SPACES = [
-  'The Yard (outdoor)',
-  'East Alley',
-  'West Alley',
-  'Rooftop',
-  'Courtyard',
-  'Ground Floor Commons',
-  'Private Suite',
-  'Other / TBD',
+  'Alley – Middle',
+  'Alley – 19th Street Side',
+  'Alley – 18th Street Side',
+  'Alley – Full',
+  '1801 Blake Lounge Area',
+  'Windsor Ballroom',
+  'Office Lobby',
+  'Milk Market',
+  'Private Tenant Space',
+  'Other',
 ]
 
 // ─── Expected response time ───────────────────────────────────────────────────
