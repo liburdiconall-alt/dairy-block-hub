@@ -4,7 +4,8 @@ import { prisma } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendFormStatusUpdateEmail } from '@/lib/email'
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -16,7 +17,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const { status, adminNotes } = await req.json()
 
   const updated = await prisma.formSubmission.update({
-    where:  { refNumber: params.id },
+    where:  { refNumber: id },
     data:   {
       status,
       ...(adminNotes !== undefined ? { adminNotes } : {}),

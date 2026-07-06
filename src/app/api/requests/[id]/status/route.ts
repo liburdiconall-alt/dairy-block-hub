@@ -6,7 +6,8 @@ import { statusUpdateSchema } from '@/lib/validations'
 import { sendStatusUpdateEmail, sendDenialEmail, sendCompletionEmail } from '@/lib/email'
 import type { TicketStatus } from '@prisma/client'
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -27,7 +28,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const request = await prisma.request.findUnique({
-    where:   { ticketNumber: params.id },
+    where:   { ticketNumber: id },
     include: { submittedBy: true },
   })
   if (!request) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -35,7 +36,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const oldStatus = request.status
 
   const updated = await prisma.request.update({
-    where: { ticketNumber: params.id },
+    where: { ticketNumber: id },
     data:  {
       status:      status as TicketStatus,
       denialReason: status === 'DENIED' ? denialReason : undefined,

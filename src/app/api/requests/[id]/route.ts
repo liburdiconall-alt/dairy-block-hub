@@ -3,12 +3,13 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const request = await prisma.request.findUnique({
-    where:   { ticketNumber: params.id },
+    where:   { ticketNumber: id },
     include: {
       submittedBy:       { include: { tenantInfo: true, staffInfo: true } },
       assignedTo:        { include: { tenantInfo: true, staffInfo: true } },
@@ -35,7 +36,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(request)
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session || session.user.role === 'TENANT') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -43,7 +45,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   const body = await req.json()
 
-  const request = await prisma.request.findUnique({ where: { ticketNumber: params.id } })
+  const request = await prisma.request.findUnique({ where: { ticketNumber: id } })
   if (!request) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Update maintenance detail
@@ -65,7 +67,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const updated = await prisma.request.update({
-    where: { ticketNumber: params.id },
+    where: { ticketNumber: id },
     data:  {
       ...(body.title       && { title:       body.title       }),
       ...(body.description && { description: body.description }),

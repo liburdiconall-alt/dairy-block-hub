@@ -5,13 +5,14 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const proposal = await prisma.eventProposal.findUnique({
-    where:   { proposalNumber: params.id },
+    where:   { proposalNumber: id },
     include: {
       submittedBy: { select: { name: true, email: true } },
       reviewedBy:  { select: { name: true } },

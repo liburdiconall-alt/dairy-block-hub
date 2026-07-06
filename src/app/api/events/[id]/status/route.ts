@@ -13,8 +13,9 @@ const schema = z.object({
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -27,13 +28,13 @@ export async function PATCH(
   const { status, adminNotes, denialReason } = schema.parse(body)
 
   const proposal = await prisma.eventProposal.findUnique({
-    where:   { proposalNumber: params.id },
+    where:   { proposalNumber: id },
     include: { submittedBy: true },
   })
   if (!proposal) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const updated = await prisma.eventProposal.update({
-    where: { proposalNumber: params.id },
+    where: { proposalNumber: id },
     data: {
       status,
       adminNotes:   adminNotes   ?? proposal.adminNotes,

@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { assignSchema } from '@/lib/validations'
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session || session.user.role === 'TENANT') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -19,11 +20,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const assignee = await prisma.user.findUnique({ where: { id: assignedToId } })
   if (!assignee) return NextResponse.json({ error: 'Staff member not found' }, { status: 404 })
 
-  const request = await prisma.request.findUnique({ where: { ticketNumber: params.id } })
+  const request = await prisma.request.findUnique({ where: { ticketNumber: id } })
   if (!request) return NextResponse.json({ error: 'Request not found' }, { status: 404 })
 
   const updated = await prisma.request.update({
-    where: { ticketNumber: params.id },
+    where: { ticketNumber: id },
     data:  {
       assignedToId,
       status: request.status === 'SUBMITTED' || request.status === 'APPROVED' ? 'ASSIGNED' : request.status,

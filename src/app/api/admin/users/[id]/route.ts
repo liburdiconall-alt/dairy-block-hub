@@ -6,8 +6,9 @@ import { sendAccessApprovedEmail, sendAccessDeniedEmail } from '@/lib/email'
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -20,7 +21,7 @@ export async function PATCH(
 
   const { action, reason, newRole } = await req.json()
 
-  const user = await prisma.user.findUnique({ where: { id: params.id } })
+  const user = await prisma.user.findUnique({ where: { id } })
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
@@ -33,7 +34,7 @@ export async function PATCH(
 
   if (action === 'approve') {
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data:  { status: 'ACTIVE', isActive: true },
     })
     try {
@@ -47,7 +48,7 @@ export async function PATCH(
 
   if (action === 'deny') {
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data:  { status: 'DENIED', isActive: false },
     })
     try {
@@ -62,7 +63,7 @@ export async function PATCH(
 
   if (action === 'deactivate') {
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data:  { isActive: false, status: 'DENIED' },
     })
     return NextResponse.json({ success: true })
@@ -70,7 +71,7 @@ export async function PATCH(
 
   if (action === 'reactivate') {
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data:  { isActive: true, status: 'ACTIVE' },
     })
     return NextResponse.json({ success: true })
@@ -82,7 +83,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
     }
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data:  { role: newRole },
     })
     return NextResponse.json({ success: true })
