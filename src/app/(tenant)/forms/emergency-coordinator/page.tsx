@@ -7,23 +7,27 @@ import { cn } from '@/lib/utils'
 interface CoordinatorInfo {
   name: string
   title: string
-  cellPhone: string
-  workPhone: string
+  mobilePhone: string
+  officePhone: string
   email: string
+}
+
+interface MobilityPerson {
+  name: string
+  location: string
 }
 
 interface FormData {
   companyName: string
-  floorSuite: string
-  numEmployees: string
-  specialNeeds: string
-  primary: CoordinatorInfo
-  alternate: CoordinatorInfo
+  primary: [CoordinatorInfo, CoordinatorInfo]
+  alternate: [CoordinatorInfo, CoordinatorInfo]
+  mobilityPersons: [MobilityPerson, MobilityPerson]
+  completedBy: string
+  signatureDate: string
 }
 
-function CoordinatorFields({ label, prefix, data, onChange }: {
+function CoordinatorFields({ label, data, onChange }: {
   label: string
-  prefix: string
   data: CoordinatorInfo
   onChange: (field: keyof CoordinatorInfo, value: string) => void
 }) {
@@ -33,51 +37,69 @@ function CoordinatorFields({ label, prefix, data, onChange }: {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-semibold text-db-black mb-1.5">Name</label>
-          <input required value={data.name} onChange={e => onChange('name', e.target.value)} className="db-input" placeholder="Full name" />
+          <input value={data.name} onChange={e => onChange('name', e.target.value)} className="db-input" placeholder="Full name" />
         </div>
         <div>
           <label className="block text-sm font-semibold text-db-black mb-1.5">Title / Position</label>
-          <input required value={data.title} onChange={e => onChange('title', e.target.value)} className="db-input" placeholder="Job title" />
+          <input value={data.title} onChange={e => onChange('title', e.target.value)} className="db-input" placeholder="Job title" />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-db-black mb-1.5">Cell Phone</label>
-          <input required type="tel" value={data.cellPhone} onChange={e => onChange('cellPhone', e.target.value)} className="db-input" placeholder="(303) 555-0000" />
+          <label className="block text-sm font-semibold text-db-black mb-1.5">Mobile Phone</label>
+          <input type="tel" value={data.mobilePhone} onChange={e => onChange('mobilePhone', e.target.value)} className="db-input" placeholder="(303) 555-0000" />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-db-black mb-1.5">Work Phone</label>
-          <input required type="tel" value={data.workPhone} onChange={e => onChange('workPhone', e.target.value)} className="db-input" placeholder="(303) 555-0000" />
+          <label className="block text-sm font-semibold text-db-black mb-1.5">Office Phone</label>
+          <input type="tel" value={data.officePhone} onChange={e => onChange('officePhone', e.target.value)} className="db-input" placeholder="(303) 555-0000" />
         </div>
         <div className="col-span-2">
           <label className="block text-sm font-semibold text-db-black mb-1.5">Email</label>
-          <input required type="email" value={data.email} onChange={e => onChange('email', e.target.value)} className="db-input" placeholder="email@company.com" />
+          <input type="email" value={data.email} onChange={e => onChange('email', e.target.value)} className="db-input" placeholder="email@company.com" />
         </div>
       </div>
     </div>
   )
 }
 
-const emptyCoord = (): CoordinatorInfo => ({ name: '', title: '', cellPhone: '', workPhone: '', email: '' })
+const emptyCoord = (): CoordinatorInfo => ({ name: '', title: '', mobilePhone: '', officePhone: '', email: '' })
+const emptyMobility = (): MobilityPerson => ({ name: '', location: '' })
 
 export default function EmergencyCoordinatorForm() {
+  const today = new Date().toISOString().split('T')[0]
   const [form, setForm] = useState<FormData>({
     companyName: '',
-    floorSuite: '',
-    numEmployees: '',
-    specialNeeds: '',
-    primary: emptyCoord(),
-    alternate: emptyCoord(),
+    primary: [emptyCoord(), emptyCoord()],
+    alternate: [emptyCoord(), emptyCoord()],
+    mobilityPersons: [emptyMobility(), emptyMobility()],
+    completedBy: '',
+    signatureDate: today,
   })
   const [loading, setLoading]     = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [refNumber, setRefNumber] = useState('')
   const [error, setError]         = useState('')
 
-  function updateCoord(which: 'primary' | 'alternate', field: keyof CoordinatorInfo, value: string) {
-    setForm(prev => ({ ...prev, [which]: { ...prev[which], [field]: value } }))
+  function updateCoord(which: 'primary' | 'alternate', index: 0 | 1, field: keyof CoordinatorInfo, value: string) {
+    setForm(prev => {
+      const updated = [...prev[which]] as [CoordinatorInfo, CoordinatorInfo]
+      updated[index] = { ...updated[index], [field]: value }
+      return { ...prev, [which]: updated }
+    })
+  }
+
+  function updateMobility(index: 0 | 1, field: keyof MobilityPerson, value: string) {
+    setForm(prev => {
+      const updated = [...prev.mobilityPersons] as [MobilityPerson, MobilityPerson]
+      updated[index] = { ...updated[index], [field]: value }
+      return { ...prev, mobilityPersons: updated }
+    })
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!form.primary[0].name) {
+      setError('At least one Primary Emergency Coordinator name is required.')
+      return
+    }
     setLoading(true)
     setError('')
     try {
@@ -130,61 +152,108 @@ export default function EmergencyCoordinatorForm() {
           <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center">
             <AlertCircleIcon size={18} className="text-db-red" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-db-black">Emergency Coordinator Form</h1>
+          <h1 className="font-display text-2xl font-bold text-db-black">Emergency Coordinator Information Form</h1>
         </div>
         <p className="text-db-gray-400 text-sm ml-12">Designate emergency coordinators for your floor. Required within one week of move-in.</p>
       </div>
 
-      <div className="flex items-start gap-2 p-4 bg-db-mint-light rounded-xl mb-6">
+      <div className="flex items-start gap-2 p-4 bg-db-mint-light rounded-xl mb-3">
         <Info size={15} className="text-db-teal flex-shrink-0 mt-0.5" />
         <p className="text-xs text-db-teal-dark">Designate one Emergency Coordinator per every 20 on-site staff members. The alternate coordinator steps in if the primary is absent during an emergency or evacuation.</p>
       </div>
+      <div className="mb-6">
+        <a
+          href="/docs/emergency-coordinator-handbook.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-db-teal hover:text-db-teal-dark transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          View Emergency Coordinator Handbook (PDF)
+        </a>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">
-            <label className="block text-sm font-semibold text-db-black mb-1.5">Company Name</label>
-            <input required value={form.companyName} onChange={e => setForm(p => ({ ...p, companyName: e.target.value }))} className="db-input" placeholder="Your company name" />
+        <div>
+          <label className="block text-sm font-semibold text-db-black mb-1.5">Company Name</label>
+          <input required value={form.companyName} onChange={e => setForm(p => ({ ...p, companyName: e.target.value }))} className="db-input" placeholder="Your company name" />
+        </div>
+
+        {/* Primary coordinators */}
+        <div className="border-t border-db-gray-100 pt-5 space-y-6">
+          <CoordinatorFields
+            label="Primary Emergency Coordinator #1"
+            data={form.primary[0]}
+            onChange={(field, value) => updateCoord('primary', 0, field, value)}
+          />
+          <CoordinatorFields
+            label="Primary Emergency Coordinator #2"
+            data={form.primary[1]}
+            onChange={(field, value) => updateCoord('primary', 1, field, value)}
+          />
+        </div>
+
+        {/* Alternate coordinators */}
+        <div className="border-t border-db-gray-100 pt-5 space-y-6">
+          <CoordinatorFields
+            label="Alternate Emergency Coordinator #1"
+            data={form.alternate[0]}
+            onChange={(field, value) => updateCoord('alternate', 0, field, value)}
+          />
+          <CoordinatorFields
+            label="Alternate Emergency Coordinator #2"
+            data={form.alternate[1]}
+            onChange={(field, value) => updateCoord('alternate', 1, field, value)}
+          />
+        </div>
+
+        {/* Mobility impaired */}
+        <div className="border-t border-db-gray-100 pt-5">
+          <p className="text-sm font-semibold text-db-black mb-4">
+            MOBILITY IMPAIRED INDIVIDUALS – Those requiring assistance down the stairs during an evacuation
+          </p>
+          {([0, 1] as const).map(i => (
+            <div key={i} className="space-y-3 mb-5">
+              <p className="text-xs text-db-gray-400 font-medium">Person {i + 1}</p>
+              <div>
+                <label className="block text-sm font-semibold text-db-black mb-1.5">Name</label>
+                <input
+                  value={form.mobilityPersons[i].name}
+                  onChange={e => updateMobility(i, 'name', e.target.value)}
+                  className="db-input"
+                  placeholder="Full name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-db-black mb-1.5">Detailed work location</label>
+                <input
+                  value={form.mobilityPersons[i].location}
+                  onChange={e => updateMobility(i, 'location', e.target.value)}
+                  className="db-input"
+                  placeholder="e.g. 2nd floor – 1st office behind reception desk"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Completed by / Signature */}
+        <div className="border-t border-db-gray-100 pt-5 space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-db-black mb-1.5">Completed By / Signature</label>
+            <input
+              required
+              value={form.completedBy}
+              onChange={e => setForm(p => ({ ...p, completedBy: e.target.value }))}
+              className="db-input"
+              placeholder="Type your full legal name as your electronic signature"
+            />
+            <p className="text-xs text-db-gray-400 mt-1">By typing your name, you consent to this serving as your electronic signature.</p>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-db-black mb-1.5">Floor / Suite Number</label>
-            <input required value={form.floorSuite} onChange={e => setForm(p => ({ ...p, floorSuite: e.target.value }))} className="db-input" placeholder="e.g. 4th Floor, Suite 400" />
+            <label className="block text-sm font-semibold text-db-black mb-1.5">Date</label>
+            <input type="date" value={form.signatureDate} onChange={e => setForm(p => ({ ...p, signatureDate: e.target.value }))} className="db-input" />
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-db-black mb-1.5">Number of Employees on Floor</label>
-            <input required type="number" min="1" value={form.numEmployees} onChange={e => setForm(p => ({ ...p, numEmployees: e.target.value }))} className="db-input" placeholder="e.g. 25" />
-          </div>
-        </div>
-
-        <div className="border-t border-db-gray-100 pt-5">
-          <CoordinatorFields
-            label="Primary Emergency Coordinator"
-            prefix="primary"
-            data={form.primary}
-            onChange={(field, value) => updateCoord('primary', field, value)}
-          />
-        </div>
-
-        <div className="border-t border-db-gray-100 pt-5">
-          <CoordinatorFields
-            label="Alternate Emergency Coordinator"
-            prefix="alternate"
-            data={form.alternate}
-            onChange={(field, value) => updateCoord('alternate', field, value)}
-          />
-        </div>
-
-        <div className="border-t border-db-gray-100 pt-5">
-          <label className="block text-sm font-semibold text-db-black mb-1.5">
-            Special Needs / Mobility Issues on Floor <span className="text-db-gray-400 font-normal">(optional)</span>
-          </label>
-          <textarea
-            value={form.specialNeeds}
-            onChange={e => setForm(p => ({ ...p, specialNeeds: e.target.value }))}
-            className="db-textarea"
-            rows={3}
-            placeholder="List individuals who may require assistance during an evacuation, including their detailed work location (e.g. 4th floor, 1st office behind reception)…"
-          />
         </div>
 
         {error && (
