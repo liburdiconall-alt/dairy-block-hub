@@ -35,7 +35,7 @@ async function sendEmail(opts: { from: string; to: string | string[]; subject: s
   await sendEmail({ from: opts.from, to: toArray.join(', '), subject: opts.subject, html: opts.html })
 }
 
-const FROM = process.env.EMAIL_FROM ?? 'Dairy Block Hub <noreply@dairyblock.com>'
+const FROM = process.env.EMAIL_FROM ?? 'Dairy Block Hub <noreply@dairyblockhub.com>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'conall.liburdi@realberry.com'
 
