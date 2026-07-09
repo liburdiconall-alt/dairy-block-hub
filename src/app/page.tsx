@@ -10,7 +10,7 @@ export default function LandingPage() {
         <div>
           <span className="section-label text-db-mint">Dairy Block</span>
           <p className="font-display text-white text-lg font-bold leading-tight mt-0.5">
-            Maintenance &<br />Security Hub
+            Tenant Hub
           </p>
         </div>
         <Link href="/login" className="btn-ghost text-white border-white/20 hover:bg-white/10 hover:text-white text-sm">

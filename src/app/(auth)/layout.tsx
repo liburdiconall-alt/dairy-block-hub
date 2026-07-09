@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10">
           <span className="section-label text-db-mint text-xs">Dairy Block</span>
-          <p className="font-display text-white text-2xl font-bold mt-1">Maintenance &<br />Security Hub</p>
+          <p className="font-display text-white text-2xl font-bold mt-1">Tenant Hub</p>
         </div>
 
         <div className="relative z-10">
