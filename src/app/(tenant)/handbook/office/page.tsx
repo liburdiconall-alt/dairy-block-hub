@@ -228,7 +228,7 @@ export default async function OfficeHandbookPage() {
       {/* Moving In & Out */}
       <Section title="Moving In & Out" icon={Package}>
         <InfoCard>
-          <p className="text-sm text-db-gray-600 leading-relaxed mb-3">Schedule moves with Property Management <strong>at least two weeks in advance</strong>. Moves and deliveries which require multiple trips are not allowed during peak business hours of Monday–Friday 8:00 AM – 5:00 PM.</p>
+          <p className="text-sm text-db-gray-600 leading-relaxed mb-3">Schedule moves with Property Management <strong>at least 4 weeks in advance</strong>. Moves and deliveries which require multiple trips are not allowed during peak business hours of Monday–Friday 8:00 AM – 5:00 PM.</p>
           <p className="text-xs font-semibold text-db-gray-400 uppercase tracking-wider mb-2">Moving Checklist</p>
           <ul className="text-sm text-db-gray-600 space-y-1.5">
             {[
