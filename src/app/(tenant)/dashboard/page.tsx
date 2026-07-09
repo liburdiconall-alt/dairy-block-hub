@@ -47,7 +47,7 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Maintenance & Security — external link banner */}
+      {/* Tenant Portal — external link banner */}
       <a
         href={MAINTENANCE_URL}
         target="_blank"
@@ -60,9 +60,9 @@ export default async function DashboardPage() {
           </div>
           <div>
             <p className="font-semibold text-db-black text-sm group-hover:text-db-teal transition-colors">
-              Submit a Maintenance or Security Request
+              Tenant Request Portal
             </p>
-            <p className="text-xs text-db-gray-400 mt-0.5">Opens the Dairy Block tenant request portal in a new tab</p>
+            <p className="text-xs text-db-gray-400 mt-0.5">For building service requests — opens the Dairy Block tenant portal in a new tab</p>
           </div>
         </div>
         <ExternalLink size={16} className="text-db-gray-300 group-hover:text-db-teal transition-colors flex-shrink-0" />
@@ -108,7 +108,7 @@ export default async function DashboardPage() {
             </div>
           </a>
 
-          {/* External: Maintenance/Security */}
+          {/* External: Tenant Portal */}
           <a href={MAINTENANCE_URL} target="_blank" rel="noopener noreferrer"
             className="db-card p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group flex flex-col gap-3"
           >
@@ -117,9 +117,9 @@ export default async function DashboardPage() {
             </div>
             <div>
               <p className="font-semibold text-db-black text-sm group-hover:text-db-teal transition-colors flex items-center gap-1">
-                Maintenance & Security <ExternalLink size={11} className="text-db-gray-300" />
+                Tenant Portal <ExternalLink size={11} className="text-db-gray-300" />
               </p>
-              <p className="text-xs text-db-gray-400 mt-0.5">Submit a request via tenant portal</p>
+              <p className="text-xs text-db-gray-400 mt-0.5">Building service requests</p>
             </div>
           </a>
 

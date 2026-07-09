@@ -19,9 +19,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </p>
           <div className="mt-8 flex flex-col gap-3">
             {[
-              'Submit maintenance & security requests',
-              'Track status in real time',
-              'Automated email updates',
+              'Submit building forms digitally',
+              'Plan and manage events',
+              'Access the tenant handbook & resources',
               'Staff & tenant portals',
             ].map((item) => (
               <div key={item} className="flex items-center gap-2.5 text-db-gray-400 text-sm">

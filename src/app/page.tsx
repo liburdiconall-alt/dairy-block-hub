@@ -32,7 +32,7 @@ export default function LandingPage() {
             <span className="text-db-mint">Taken care of.</span>
           </h1>
           <p className="text-db-gray-300 text-lg sm:text-xl leading-relaxed max-w-xl mb-10 font-light">
-            Submit maintenance and security requests, track progress in real time, and stay connected
+            Submit building forms, plan events, access resources, and stay connected
             with the Dairy Block team — all in one place.
           </p>
 
@@ -52,7 +52,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <p className="section-label mb-3">How it works</p>
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-db-black mb-12 max-w-lg">
-            Requests handled with the care Dairy Block is known for.
+            Everything you need, in one place.
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -60,38 +60,38 @@ export default function LandingPage() {
               {
                 icon: <Wrench size={20} />,
                 color: 'bg-db-teal/10 text-db-teal',
-                title: 'Maintenance Requests',
-                desc: 'HVAC, plumbing, electrical, lighting, and more. Submit once, track every step.',
+                title: 'Building Forms',
+                desc: 'Key requests, fitness waivers, pet registration, emergency coordinators, and more — submitted digitally in minutes.',
               },
               {
                 icon: <Shield size={20} />,
                 color: 'bg-db-orange/10 text-db-orange',
-                title: 'Security Reports',
-                desc: 'Access control, incident reports, after-hours escort, and safety concerns — handled discreetly.',
+                title: 'Event Planning',
+                desc: 'Submit event proposals for Dairy Block spaces, track approval status, and coordinate with the events team.',
               },
               {
                 icon: <Clock size={20} />,
                 color: 'bg-db-marigold/10 text-db-marigold',
                 title: 'Real-Time Updates',
-                desc: 'Every status change hits your inbox and dashboard instantly. No more wondering.',
+                desc: 'Every form submission and status change hits your inbox and dashboard instantly.',
               },
               {
                 icon: <CheckCircle2 size={20} />,
                 color: 'bg-db-mint text-db-teal-dark',
-                title: 'Transparent Workflow',
-                desc: 'Full ticket history, assigned staff, scheduled times, and completion verification — always visible.',
+                title: 'Tenant Handbook',
+                desc: 'Office and retail policies, building hours, fees, and procedures — always up to date.',
               },
               {
                 icon: <Users size={20} />,
                 color: 'bg-db-black text-db-mint',
                 title: 'Staff Dashboard',
-                desc: 'Property managers, technicians, and security officers all work from one unified hub.',
+                desc: 'Property managers review form submissions, manage content, and oversee tenant accounts from one hub.',
               },
               {
                 icon: <ArrowRight size={20} />,
                 color: 'bg-db-red/10 text-db-red',
-                title: 'Emergency Escalation',
-                desc: 'Emergency requests trigger instant alerts to on-call staff and management.',
+                title: 'Building Resources',
+                desc: 'Staff directory, building contacts, hours, and announcements — all accessible from your dashboard.',
               },
             ].map((f) => (
               <div key={f.title} className="db-card p-6 hover:shadow-card-hover transition-shadow duration-200">

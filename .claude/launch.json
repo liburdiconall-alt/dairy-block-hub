@@ -1,0 +1,11 @@
+﻿{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dairy-block-hub",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:\\Users\\Conall.Liburdi\\AppData\\Local\\node-portable\\node-v20.19.2-win-x64\\node_modules\\npm\\bin\\npm-cli.js", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

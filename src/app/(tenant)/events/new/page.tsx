@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft, Send, Calendar, Info } from 'lucide-react'
+import { ArrowLeft, Send, Calendar, Info, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { EVENT_TYPE_LABELS, EVENT_SPACES, cn } from '@/lib/utils'
@@ -43,7 +43,7 @@ export default function NewEventPage() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Failed to submit')
-      toast.success('Proposal submitted! Check your email for confirmation.')
+      toast.success('Application submitted! Check your email for confirmation.')
       router.push(`/events/${json.proposalNumber}`)
     } catch (err: any) {
       toast.error(err.message)
@@ -59,9 +59,17 @@ export default function NewEventPage() {
       </Link>
 
       <div className="mb-8">
-        <p className="section-label mb-2">New Proposal</p>
-        <h1 className="font-display text-3xl font-bold text-db-black">Propose an Event</h1>
-        <p className="text-db-gray-400 mt-1 text-sm">Tell us about your event or activation idea. We review all proposals and aim to respond within 3 business days.</p>
+        <p className="section-label mb-2">New Application</p>
+        <h1 className="font-display text-3xl font-bold text-db-black">Apply for an Event</h1>
+        <p className="text-db-gray-400 mt-1 text-sm">Tell us about your event or activation. We review all applications and aim to respond within 3 business days.</p>
+      </div>
+
+      {/* Approval disclaimer */}
+      <div className="flex items-start gap-2 p-3.5 bg-amber-50 rounded-xl border border-amber-200 mb-6">
+        <AlertCircle size={15} className="text-amber-600 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-700 leading-relaxed font-medium">
+          Your event is not approved until you receive written approval from property management.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -163,7 +171,7 @@ export default function NewEventPage() {
         <div className="flex items-start gap-2 p-3.5 bg-db-mint-light rounded-xl">
           <Info size={15} className="text-db-teal flex-shrink-0 mt-0.5" />
           <p className="text-xs text-db-teal-dark leading-relaxed">
-            You will receive an email confirmation immediately after submitting. Our team reviews all proposals and will follow up within 3 business days.
+            You will receive an email confirmation immediately after submitting. Our team reviews all applications and will follow up within 3 business days.
           </p>
         </div>
 
@@ -171,7 +179,7 @@ export default function NewEventPage() {
         <div className="flex gap-3 pt-2">
           <Link href="/events" className="btn-ghost flex-1 text-center">Cancel</Link>
           <button type="submit" disabled={loading} className={cn('btn-teal flex-1', loading && 'opacity-70')}>
-            {loading ? 'Submitting…' : <><Send size={16} /> Submit Proposal</>}
+            {loading ? 'Submitting…' : <><Send size={16} /> Submit Application</>}
           </button>
         </div>
       </form>

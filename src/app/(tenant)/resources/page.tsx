@@ -140,7 +140,6 @@ export default async function ResourcesPage() {
           <p className="text-xs font-semibold text-db-gray-400 uppercase tracking-wider mb-3">Maintenance & Operations</p>
           <div className="space-y-2.5">
             <ContactRow icon={Phone} label="After-Hours Maintenance" value="(303) 249-0178" href="tel:3032490178" />
-            <ContactRow icon={Phone} label="After-Hours (alt)"       value="(970) 962-0011" href="tel:9709620011" />
             <ContactRow icon={Mail}  label="Work Orders"             value="pm@dairyblock.com" href="mailto:pm@dairyblock.com" />
           </div>
           <div className="mt-3 pt-3 border-t border-db-gray-100 space-y-0.5">
@@ -163,6 +162,7 @@ export default async function ResourcesPage() {
               <ContactRow icon={Phone} label="Valet" value="(720) 504-3620" href="tel:7205043620" />
             </div>
             <div>
+              {/* TODO: Confirm new towing company with Liam before updating */}
               <p className="text-xs text-db-gray-400 mb-1">Ace Towing (Emergency)</p>
               <ContactRow icon={Phone} label="Towing" value="(303) 980-8770" href="tel:3039808770" />
             </div>
